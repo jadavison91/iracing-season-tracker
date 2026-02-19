@@ -332,6 +332,18 @@ https://members.iracing.com/membersite/member/CareerStats.do?custid=123456
 - **Response**: Information about all active series
 - **Usage**: Build series list and metadata
 
+#### 7. Series Seasons with Schedule (Phase 4) - VERIFIED
+- **Endpoint**: `GET /data/series/seasons`
+- **Parameters**: `series_id`
+- **Response**: Full season data including `schedules` array with 12 weeks
+- **Schedule Entry Fields**:
+  - `race_week_num` (0-11)
+  - `start_date` (ISO date)
+  - `track.track_id`
+  - `track.track_name`
+  - `track.config_name`
+- **Usage**: Display full season grid, determine current week, match races to weeks
+
 ### Data Models
 
 ```typescript
@@ -384,6 +396,35 @@ interface RecentDrivers {
   // Stored in localStorage
   drivers: DriverProfile[];
   default: number; // default customerId to load
+}
+
+// Season Schedule Models (Phase 4)
+interface SeasonSchedule {
+  seriesId: number;
+  seriesName: string;
+  seasonId: number;
+  seasonYear: number;
+  seasonQuarter: number; // 1-4
+  weeks: WeekSchedule[];
+}
+
+interface WeekSchedule {
+  weekNum: number; // 0-11 (iRacing uses 0-indexed)
+  displayWeek: number; // 1-12 (for display)
+  trackId: number;
+  trackName: string;
+  trackConfig?: string;
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+}
+
+interface WeekResult {
+  weekNum: number;
+  schedule: WeekSchedule;
+  status: 'completed' | 'active' | 'upcoming' | 'skipped';
+  bestResult: RaceResult | null;
+  totalAttempts: number;
+  allResults: RaceResult[];
 }
 ```
 
@@ -554,6 +595,139 @@ interface RecentDrivers {
 - Clear data presentation
 - Production ready
 
+### Phase 4: Season Schedule Integration (Week 7+)
+**Goal**: Display full 12-week season schedule with driver results per week
+
+#### Overview
+iRacing seasons run for 12 weeks, with each week featuring a specific track for each series. This phase adds the ability to display the complete season schedule and show driver results mapped to each week.
+
+#### Features
+
+**4.1 Season Schedule Display**
+- Show all 12 weeks of the season in the Series Detail view
+- Each week displays:
+  - Week number (1-12)
+  - Track name and configuration
+  - Race status: Completed / Upcoming / Skipped
+  - Best result (if completed)
+- Visual distinction between completed weeks, current week, and future weeks
+- Countdown or indicator for current active week
+
+**4.2 Best Result Per Week**
+- When a driver completes multiple races in the same week (same track/car/series):
+  - Only display the **best result** based on Championship Points
+  - Store all attempts but surface only the best
+  - Optional: Show attempt count (e.g., "Best of 3 attempts")
+- Calculation logic:
+  ```
+  For each week:
+    Filter races by: series_id + race_week_num
+    Sort by: champ_points DESC
+    Return: First result (highest points)
+  ```
+
+**4.3 Schedule Data Ingestion**
+- **Solution**: Use iRacing Data API directly (verified available)
+
+  **API Endpoint: `/data/series/seasons`**
+  - Returns full season data including `schedules` array
+  - Each schedule entry contains:
+    - `race_week_num` (0-11, 0-indexed)
+    - `start_date` (ISO date string)
+    - `track.track_id`
+    - `track.track_name`
+    - `track.config_name` (track configuration, if applicable)
+  - Complete 12-week schedule available for all series
+  - No manual data entry or PDF parsing required
+
+  **Implementation**:
+  - Add `getSeriesSeasons(seriesId)` function to API client
+  - Create API route: `GET /api/series/[seriesId]/schedule`
+  - Cache schedule data (changes infrequently)
+
+**4.4 Schedule Data Model**
+
+```typescript
+interface SeasonSchedule {
+  seriesId: number;
+  seriesName: string;
+  seasonId: number;
+  seasonYear: number;
+  seasonQuarter: number; // 1-4
+  weeks: WeekSchedule[];
+}
+
+interface WeekSchedule {
+  weekNum: number; // 0-11 (iRacing uses 0-indexed)
+  displayWeek: number; // 1-12 (for display)
+  trackId: number;
+  trackName: string;
+  trackConfig?: string;
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+  isActive: boolean;
+  isComplete: boolean;
+}
+
+interface WeekResult {
+  weekNum: number;
+  trackName: string;
+  bestResult: RaceResult | null;
+  totalAttempts: number;
+  allResults: RaceResult[]; // For "show all attempts" feature
+}
+```
+
+**4.5 UI Components**
+
+**Season Schedule Grid**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Week │ Track                    │ Result    │ Points │ Att  │
+├─────────────────────────────────────────────────────────────┤
+│  1   │ Daytona Road Course      │ P3        │ 142    │ 2/2  │
+│  2   │ Sebring International    │ P7        │ 98     │ 1/1  │
+│  3   │ Road Atlanta             │ P1 🏆     │ 168    │ 3/3  │
+│  4   │ Watkins Glen             │ --        │ --     │ 0    │
+│  5   │ Suzuka Circuit           │ P4        │ 121    │ 1/1  │
+│  6   │ Spa-Francorchamps     ◀  │ In Progress...     │      │
+│  7   │ Nürburgring GP           │           │        │      │
+│  8   │ Monza                    │           │        │      │
+│  ...                                                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Week Detail Expansion**
+- Click week row to expand and show all attempts
+- Compare attempts side-by-side
+- See why one result was "best" (points breakdown)
+
+#### Tasks
+
+**Backend**
+- [x] Research iRacing API for schedule endpoints (DONE - `/series/seasons` provides full schedule)
+- [ ] Add `getSeriesSeasons(seriesId)` function to API client
+- [ ] Create API endpoint: `GET /api/series/[seriesId]/schedule`
+- [ ] Create API endpoint: `GET /api/series/[seriesId]/week/[weekNum]/results`
+- [ ] Implement "best result" aggregation logic
+- [ ] Add `race_week_num` to race data transformation
+
+**Frontend**
+- [ ] Build `SeasonScheduleTable` component
+- [ ] Build `WeekRow` component with expand/collapse
+- [ ] Add week status indicators (complete/active/upcoming)
+- [ ] Implement "best of N attempts" display
+- [ ] Add schedule view toggle (grid vs list)
+- [ ] Mobile-responsive schedule view
+
+#### Success Criteria
+- Series page shows full 12-week schedule
+- Each week shows track and best result
+- Multiple attempts correctly aggregated to best result
+- Current week is highlighted
+- Future weeks shown as upcoming
+- Schedule data can be updated for new seasons
+
 ---
 
 ## Risk Assessment
@@ -648,6 +822,7 @@ API_CACHE_TTL=300000  # 5 minutes in milliseconds
 |---------|------|--------|---------|
 | 1.0 | 2026-02-15 | Jason | Initial PRD |
 | 1.1 | 2026-02-15 | Jason | Updated to reflect simplified architecture: Password Limited Grant with multi-driver capability via Customer ID. Removed database requirement, simplified authentication flow, added public data architecture section. |
+| 1.2 | 2026-02-19 | Jason | Added Phase 4: Season Schedule Integration. Features include 12-week schedule display, best result per week aggregation. Verified `/series/seasons` API provides full schedule - no PDF parsing needed. |
 
 ---
 
