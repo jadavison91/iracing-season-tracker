@@ -1,25 +1,24 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/EmptyState';
-import { useRecentRaces, useSeasonRaces } from '@/hooks';
+import { useDriverData, useRacesByDiscipline } from '@/contexts/DriverDataContext';
 import { VirtualIRatingChart } from '@/components/charts/VirtualIRatingChart';
+import { IRatingByCategoryChart } from '@/components/charts/IRatingByCategoryChart';
 import { AchievementsTable } from '@/components/charts/AchievementsTable';
 import { IncidentTrendChart } from '@/components/charts/IncidentTrendChart';
 import { FinishTrendChart } from '@/components/charts/FinishTrendChart';
 import { SoFDistributionChart } from '@/components/charts/SoFDistributionChart';
 import { ChampionshipPointsChart } from '@/components/charts/ChampionshipPointsChart';
 import {
-  mockAllRaces,
   calculateVirtualIRating,
   getSeriesAchievements,
   getIncidentTrend,
   getSoFDistribution,
   getFinishPositionTrend,
   getChampionshipPointsBySeries,
-  USE_MOCK_DATA,
 } from '@/lib/mock-data';
 
 interface ChartsViewProps {
@@ -27,42 +26,43 @@ interface ChartsViewProps {
 }
 
 export function ChartsView({ customerId }: ChartsViewProps) {
-  // Use season-races for complete race data (championship points, achievements, etc.)
-  const { data: seasonRaces, isLoading: seasonLoading } = useSeasonRaces(customerId);
-  // Use recent-races for iRating data (has oldIRating/newIRating fields)
-  const { data: recentRaces, isLoading: recentLoading } = useRecentRaces(customerId);
+  const { data: driverData, setCustomerId } = useDriverData();
+  const { racesByDiscipline, isLoading: disciplineLoading } = useRacesByDiscipline();
 
-  const isLoading = seasonLoading || recentLoading;
+  // Sync customerId with the driver data store
+  useEffect(() => {
+    setCustomerId(customerId);
+  }, [customerId, setCustomerId]);
 
-  // Use season races for most charts (has all races with champ points)
-  const races = USE_MOCK_DATA ? mockAllRaces : (seasonRaces || []);
-  // Use recent races for iRating chart (has iRating change data)
-  const racesWithIRating = USE_MOCK_DATA ? mockAllRaces : (recentRaces || []);
+  const races = driverData.races;
+  const isLoading = driverData.isLoading;
 
-  // Calculate chart data
+  // Calculate chart data from the centralized store
   const chartData = useMemo(() => {
-    if (races.length === 0 && racesWithIRating.length === 0) return null;
+    if (races.length === 0) return null;
 
-    // Use races with iRating data for the virtual iRating chart
-    const iRatingSeriesIds = [...new Set(racesWithIRating.map((r) => r.seriesId))];
-    const virtualIRatingData = iRatingSeriesIds.map((seriesId) => ({
-      seriesId,
-      seriesName: racesWithIRating.find((r) => r.seriesId === seriesId)?.seriesName || '',
-      data: calculateVirtualIRating(racesWithIRating, seriesId),
-    }));
+    // Get unique series IDs
+    const seriesIds = [...new Set(races.map((r) => r.seriesId))];
 
-    // Use all season races for other charts (has complete champ points data)
-    const racesForStats = races.length > 0 ? races : racesWithIRating;
+    // Calculate virtual iRating per series (using races with iRating data)
+    const racesWithIRating = races.filter((r) => r.newIRating > 0);
+    const virtualIRatingData = seriesIds
+      .filter((seriesId) => racesWithIRating.some((r) => r.seriesId === seriesId))
+      .map((seriesId) => ({
+        seriesId,
+        seriesName: races.find((r) => r.seriesId === seriesId)?.seriesName || '',
+        data: calculateVirtualIRating(racesWithIRating, seriesId),
+      }));
 
     return {
       virtualIRating: virtualIRatingData,
-      achievements: getSeriesAchievements(racesForStats),
-      incidentTrend: getIncidentTrend(racesForStats),
-      sofDistribution: getSoFDistribution(racesForStats),
-      finishTrend: getFinishPositionTrend(racesForStats),
-      championshipPoints: getChampionshipPointsBySeries(racesForStats),
+      achievements: getSeriesAchievements(races),
+      incidentTrend: getIncidentTrend(races),
+      sofDistribution: getSoFDistribution(races),
+      finishTrend: getFinishPositionTrend(races),
+      championshipPoints: getChampionshipPointsBySeries(races),
     };
-  }, [races, racesWithIRating]);
+  }, [races]);
 
   if (!customerId) {
     return (
@@ -88,7 +88,7 @@ export function ChartsView({ customerId }: ChartsViewProps) {
     );
   }
 
-  if (!chartData || (races.length === 0 && racesWithIRating.length === 0)) {
+  if (!chartData || races.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
@@ -102,14 +102,30 @@ export function ChartsView({ customerId }: ChartsViewProps) {
     );
   }
 
+  // Count races with iRating data
+  const racesWithIRating = races.filter((r) => r.newIRating > 0).length;
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Performance Analytics</h1>
         <p className="text-zinc-500">
-          Analyze your racing performance across all series
+          Analyze your racing performance across all series ({races.length} races, {racesWithIRating} with iRating data)
         </p>
       </div>
+
+      {/* Overall iRating by Category */}
+      <Card>
+        <CardHeader>
+          <CardTitle>iRating by Discipline</CardTitle>
+          <CardDescription>
+            Track your overall iRating progression across different racing disciplines throughout the season
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <IRatingByCategoryChart racesByDiscipline={racesByDiscipline} isLoading={disciplineLoading} />
+        </CardContent>
+      </Card>
 
       {/* Virtual iRating Comparison */}
       <Card>

@@ -18,6 +18,7 @@ export {
   getMemberSummary,
   getMemberRecentRaces,
   getMemberCareerStats,
+  getMemberChartData,
   searchMemberResults,
   getSeries,
   getSeriesAssets,
@@ -32,3 +33,6 @@ export {
   getConstants,
   IRacingApiError,
 } from './client';
+
+// Re-export chart data types
+export type { IRatingChartDataPoint, MemberChartData } from './client';

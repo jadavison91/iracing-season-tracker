@@ -25,6 +25,7 @@ Track and visualize your iRacing season performance with detailed race history, 
 - **Drop Week Tracking** - Easily identify which weeks are being dropped from your championship total
 
 ### Charts & Analytics
+- **iRating by Discipline** - Track your overall iRating progression across iRacing's 5 categories (Sports Car, Formula, Oval, Dirt Road, Dirt Oval) with tabbed interface
 - **Virtual iRating by Series** - Track your iRating progression as if calculated per-series, shown week-by-week
 - **Championship Points by Series** - Bar chart and table showing points breakdown with best 8 weeks counting
 - **Finish Position Trends** - Track your in-class finishing positions over time with rolling average

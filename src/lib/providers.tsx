@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { ReactNode, useState } from 'react';
+import { DriverDataProvider } from '@/contexts/DriverDataContext';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -29,7 +30,9 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <DriverDataProvider>{children}</DriverDataProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

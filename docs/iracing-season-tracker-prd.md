@@ -121,12 +121,14 @@ Create a lightweight, fast-loading dashboard that answers the question: "How am 
 
 **Phase 2 - Enhanced Analytics** ✅ COMPLETED
 - [x] Virtual iRating trend by series (week-by-week progression)
+- [x] iRating by Discipline (Sports Car, Formula, Oval, Dirt Road, Dirt Oval)
 - [x] Incident tracking and analysis (incident trend chart)
 - [x] Finish position trends with rolling average
 - [x] Strength of Field distribution analysis
 - [x] Achievement stats by series (poles, wins, podiums, top 5s)
 - [x] Championship points by series chart and table
 - [x] In-class position tracking for multi-class races
+- [x] Centralized driver data store for efficient data fetching
 - [ ] Quali vs. race performance comparison
 - [ ] Head-to-head driver comparisons
 
@@ -830,6 +832,7 @@ API_CACHE_TTL=300000  # 5 minutes in milliseconds
 | 1.1 | 2026-02-15 | Jason | Updated to reflect simplified architecture: Password Limited Grant with multi-driver capability via Customer ID. Removed database requirement, simplified authentication flow, added public data architecture section. |
 | 1.2 | 2026-02-19 | Jason | Added Phase 4: Season Schedule Integration. Features include 12-week schedule display, best result per week aggregation. Verified `/series/seasons` API provides full schedule - no PDF parsing needed. |
 | 1.3 | 2026-02-19 | Jason | Completed Phase 2 (Enhanced Analytics) and Phase 4 (Season Schedule). Added: Virtual iRating by series, Championship Points chart, incident trends, finish position trends, SoF distribution, achievement stats, counting weeks highlighting, season points total, in-class position tracking for multi-class races. |
+| 1.4 | 2026-02-20 | Jason | Added iRating by Discipline chart with tabbed interface for all 5 iRacing categories. Implemented centralized DriverDataContext for efficient data fetching - loads all race data once when driver is selected, enriches with iRating from subsession details, and shares across all chart components. |
 
 ---
 

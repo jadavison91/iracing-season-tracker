@@ -223,6 +223,40 @@ export async function getMemberCareerStats(
 }
 
 /**
+ * iRating chart data point from iRacing API
+ */
+export interface IRatingChartDataPoint {
+  when: string; // ISO date string
+  value: number; // iRating value
+}
+
+/**
+ * iRating chart data response from iRacing API
+ */
+export interface MemberChartData {
+  category_id: number;
+  data: IRatingChartDataPoint[];
+}
+
+/**
+ * Get member iRating chart data (full history)
+ * @param custId - Customer ID of the driver
+ * @param categoryId - Category ID (1=oval, 2=road/sports_car, 3=dirt_oval, 4=dirt_road, 5=sports_car, 6=formula_car)
+ * @param chartType - 1=iRating, 2=ttRating, 3=License/SR
+ */
+export async function getMemberChartData(
+  custId: number,
+  categoryId: number,
+  chartType: number = 1
+): Promise<MemberChartData> {
+  return fetchFromApi<MemberChartData>('/member/chart_data', {
+    cust_id: custId.toString(),
+    category_id: categoryId.toString(),
+    chart_type: chartType.toString(),
+  });
+}
+
+/**
  * Search for race results within a date range
  * This returns all races for a member in the specified time period
  * The search endpoint uses chunked responses that need separate fetching

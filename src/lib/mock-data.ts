@@ -72,8 +72,8 @@ export const mockSeries: Series[] = [
     seriesId: 112,
     seriesName: 'Production Car Challenge by Sim-Lab',
     seriesShortName: 'Production Car Challenge',
-    categoryId: 2,
-    category: 'road',
+    categoryId: 5,
+    category: 'sports_car',
     active: true,
     official: true,
     fixedSetup: false,
@@ -82,8 +82,8 @@ export const mockSeries: Series[] = [
     seriesId: 63,
     seriesName: 'Spec Racer Ford Challenge',
     seriesShortName: 'SRF Challenge',
-    categoryId: 2,
-    category: 'road',
+    categoryId: 5,
+    category: 'sports_car',
     active: true,
     official: true,
     fixedSetup: true,
@@ -112,8 +112,8 @@ export const mockSeries: Series[] = [
     seriesId: 530,
     seriesName: 'Ford Mustang Challenge by Skip Barber',
     seriesShortName: 'Mustang Challenge',
-    categoryId: 2,
-    category: 'road',
+    categoryId: 5,
+    category: 'sports_car',
     active: true,
     official: true,
     fixedSetup: false,
@@ -1595,7 +1595,7 @@ export function calculateVirtualIRating(races: RecentRace[], seriesId: number) {
     return {
       date: race.sessionStartTime,
       weekNum: race.raceWeekNum,
-      trackName: race.trackName,
+      trackName: race.trackName || 'Unknown Track',
       virtualIRating: runningTotal,
       delta,
       baseline,
@@ -1704,9 +1704,9 @@ export function getIncidentTrend(races: RecentRace[]) {
     .map((race) => ({
       date: race.sessionStartTime,
       seriesId: race.seriesId,
-      seriesName: race.seriesName.split(' ').slice(0, 2).join(' '),
+      seriesName: (race.seriesName || 'Unknown').split(' ').slice(0, 2).join(' '),
       incidents: race.incidents,
-      trackName: race.trackName,
+      trackName: race.trackName || 'Unknown Track',
     }));
 }
 
@@ -1753,10 +1753,10 @@ export function getFinishPositionTrend(races: RecentRace[]) {
     return {
       date: race.sessionStartTime,
       seriesId: race.seriesId,
-      seriesName: race.seriesName.split(' ').slice(0, 2).join(' '),
+      seriesName: (race.seriesName || 'Unknown').split(' ').slice(0, 2).join(' '),
       finishPosition: race.finishPositionInClass,
       rollingAvg: Math.round(rollingAvg * 10) / 10,
-      trackName: race.trackName,
+      trackName: race.trackName || 'Unknown Track',
     };
   });
 }
@@ -1819,11 +1819,23 @@ export function getChampionshipPointsBySeries(races: RecentRace[]): SeriesChampi
 }
 
 function formatSeriesShortName(name: string): string {
-  if (name.includes('Production Car')) return 'Production Car';
-  if (name.includes('Spec Racer Ford')) return 'Spec Racer Ford';
-  if (name.includes('Pro 2 Lite Off-Road Rookie')) return 'Pro 2 Lite Rookie';
-  if (name.includes('Advanced Pro2 Lite')) return 'Adv Pro2 Lite';
-  if (name.includes('FIA Cross Car')) return 'FIA Cross Car';
-  if (name.includes('Mustang')) return 'Mustang GT4';
-  return name.split(' ').slice(0, 2).join(' ');
+  if (!name) return 'Unknown';
+
+  // Remove common prefixes/suffixes that make names longer
+  let shortName = name
+    .replace(/iRacing /gi, '')
+    .replace(/ Series$/gi, '')
+    .replace(/ Challenge$/gi, '')
+    .replace(/ Championship$/gi, '')
+    .replace(/ Rookie$/gi, ' (R)')
+    .replace(/ Fixed$/gi, ' (F)')
+    .trim();
+
+  // If still too long, take first 3 words
+  const words = shortName.split(' ');
+  if (words.length > 3) {
+    shortName = words.slice(0, 3).join(' ');
+  }
+
+  return shortName;
 }
