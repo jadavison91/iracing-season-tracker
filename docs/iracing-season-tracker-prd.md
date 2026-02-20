@@ -119,12 +119,16 @@ Create a lightweight, fast-loading dashboard that answers the question: "How am 
 
 ### Out of Scope (Future Phases)
 
-**Phase 2 - Enhanced Analytics**
-- iRating/Safety Rating trend graphs over time
-- Incident tracking and analysis
-- Quali vs. race performance comparison
-- Week-over-week improvement trends
-- Head-to-head driver comparisons
+**Phase 2 - Enhanced Analytics** ✅ COMPLETED
+- [x] Virtual iRating trend by series (week-by-week progression)
+- [x] Incident tracking and analysis (incident trend chart)
+- [x] Finish position trends with rolling average
+- [x] Strength of Field distribution analysis
+- [x] Achievement stats by series (poles, wins, podiums, top 5s)
+- [x] Championship points by series chart and table
+- [x] In-class position tracking for multi-class races
+- [ ] Quali vs. race performance comparison
+- [ ] Head-to-head driver comparisons
 
 **Phase 3 - Advanced Features**
 - Performance heatmaps by track
@@ -706,27 +710,29 @@ interface WeekResult {
 
 **Backend**
 - [x] Research iRacing API for schedule endpoints (DONE - `/series/seasons` provides full schedule)
-- [ ] Add `getSeriesSeasons(seriesId)` function to API client
-- [ ] Create API endpoint: `GET /api/series/[seriesId]/schedule`
-- [ ] Create API endpoint: `GET /api/series/[seriesId]/week/[weekNum]/results`
-- [ ] Implement "best result" aggregation logic
-- [ ] Add `race_week_num` to race data transformation
+- [x] Add `getSeriesSeasons(seriesId)` function to API client
+- [x] Create API endpoint: `GET /api/series/[seriesId]/schedule`
+- [x] Implement "best result" aggregation logic (best championship points per week)
+- [x] Add `race_week_num` to race data transformation
+- [x] Calculate counting weeks (best 8 of 12) for championship points
 
 **Frontend**
-- [ ] Build `SeasonScheduleTable` component
-- [ ] Build `WeekRow` component with expand/collapse
-- [ ] Add week status indicators (complete/active/upcoming)
-- [ ] Implement "best of N attempts" display
-- [ ] Add schedule view toggle (grid vs list)
-- [ ] Mobile-responsive schedule view
+- [x] Build `SeasonScheduleTable` component
+- [x] Add week status indicators (complete/active/upcoming)
+- [x] Implement "best of N attempts" display
+- [x] Add schedule view toggle (table vs card grid)
+- [x] Mobile-responsive schedule view
+- [x] Highlight counting weeks vs drop weeks
+- [x] Display season points total with counting weeks breakdown
 
 #### Success Criteria
-- Series page shows full 12-week schedule
-- Each week shows track and best result
-- Multiple attempts correctly aggregated to best result
-- Current week is highlighted
-- Future weeks shown as upcoming
-- Schedule data can be updated for new seasons
+- [x] Series page shows full 12-week schedule
+- [x] Each week shows track and best result
+- [x] Multiple attempts correctly aggregated to best result
+- [x] Current week is highlighted
+- [x] Future weeks shown as upcoming
+- [x] Counting weeks (best 8) visually distinguished from drop weeks
+- [x] Season points total displayed with counting weeks count
 
 ---
 
@@ -823,6 +829,7 @@ API_CACHE_TTL=300000  # 5 minutes in milliseconds
 | 1.0 | 2026-02-15 | Jason | Initial PRD |
 | 1.1 | 2026-02-15 | Jason | Updated to reflect simplified architecture: Password Limited Grant with multi-driver capability via Customer ID. Removed database requirement, simplified authentication flow, added public data architecture section. |
 | 1.2 | 2026-02-19 | Jason | Added Phase 4: Season Schedule Integration. Features include 12-week schedule display, best result per week aggregation. Verified `/series/seasons` API provides full schedule - no PDF parsing needed. |
+| 1.3 | 2026-02-19 | Jason | Completed Phase 2 (Enhanced Analytics) and Phase 4 (Season Schedule). Added: Virtual iRating by series, Championship Points chart, incident trends, finish position trends, SoF distribution, achievement stats, counting weeks highlighting, season points total, in-class position tracking for multi-class races. |
 
 ---
 
