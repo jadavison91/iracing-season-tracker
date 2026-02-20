@@ -38,6 +38,7 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
     eventTypeName: String(raw.event_type_name ?? raw.eventTypeName ?? 'Race'),
     trackId: toNumber(raw.track_id ?? raw.trackId ?? track?.track_id),
     trackName: String(raw.track_name ?? raw.trackName ?? track?.track_name ?? 'Unknown Track'),
+    raceWeekNum: toNumber(raw.race_week_num ?? raw.raceWeekNum, 0),
     startPosition: adjustPosition(startPos),
     finishPosition: adjustPosition(finishPos),
     startPositionInClass: adjustPosition(startPosInClass),
@@ -47,8 +48,8 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
     carClassShortName: String(raw.car_class_short_name ?? raw.carClassShortName ?? ''),
     carId: toNumber(raw.car_id ?? raw.carId),
     carName: String(raw.car_name ?? raw.carName ?? ''),
-    champPoints: toNumber(raw.champ_points ?? raw.champPoints),
-    clubPoints: toNumber(raw.club_points ?? raw.clubPoints),
+    champPoints: toNumber(raw.champ_points ?? raw.champPoints ?? raw.points ?? raw.championship_points),
+    clubPoints: toNumber(raw.club_points ?? raw.clubPoints ?? raw.league_points),
     incidents: toNumber(raw.incidents),
     lapsComplete: toNumber(raw.laps_complete ?? raw.lapsComplete),
     lapsLed: toNumber(raw.laps_led ?? raw.lapsLed),
@@ -78,9 +79,6 @@ async function fetchRecentRaces(customerId: number): Promise<{ races: RecentRace
     throw new Error(`Failed to fetch recent races: ${response.status}`);
   }
   const data = await response.json();
-
-  // Log raw response for debugging
-  console.log('[useRecentRaces] Raw API response:', data);
 
   // Transform the races from snake_case to camelCase
   const races = (data.races || []).map((raw: Record<string, unknown>) => transformRace(raw));

@@ -11,16 +11,20 @@ import {
   Legend,
 } from 'recharts';
 
+interface VirtualIRatingDataPoint {
+  date: string;
+  weekNum: number;
+  displayWeek: number;
+  trackName: string;
+  virtualIRating: number;
+  delta: number;
+  baseline: number;
+}
+
 interface VirtualIRatingData {
   seriesId: number;
   seriesName: string;
-  data: {
-    date: string;
-    trackName: string;
-    virtualIRating: number;
-    delta: number;
-    baseline: number;
-  }[];
+  data: VirtualIRatingDataPoint[];
 }
 
 interface VirtualIRatingChartProps {
@@ -30,30 +34,26 @@ interface VirtualIRatingChartProps {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export function VirtualIRatingChart({ data }: VirtualIRatingChartProps) {
-  // Combine all series data into a unified timeline
-  const allDates = new Set<string>();
+  // Get all unique weeks across all series
+  const allWeeks = new Set<number>();
   data.forEach((series) => {
     series.data.forEach((point) => {
-      allDates.add(point.date);
+      allWeeks.add(point.displayWeek);
     });
   });
 
-  const sortedDates = Array.from(allDates).sort(
-    (a, b) => new Date(a).getTime() - new Date(b).getTime()
-  );
+  // Create array of weeks 1-12 (full season)
+  const weeks = Array.from({ length: 12 }, (_, i) => i + 1);
 
-  // Create chart data with all series
-  const chartData = sortedDates.map((date) => {
+  // Create chart data with all series, one entry per week
+  const chartData = weeks.map((week) => {
     const point: Record<string, number | string> = {
-      date,
-      dateLabel: new Date(date).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      }),
+      week,
+      weekLabel: `Week ${week}`,
     };
 
     data.forEach((series, idx) => {
-      const seriesPoint = series.data.find((p) => p.date === date);
+      const seriesPoint = series.data.find((p) => p.displayWeek === week);
       if (seriesPoint) {
         point[`series_${idx}`] = seriesPoint.virtualIRating;
         point[`delta_${idx}`] = seriesPoint.delta;
@@ -65,6 +65,7 @@ export function VirtualIRatingChart({ data }: VirtualIRatingChartProps) {
   });
 
   // Fill in missing values with previous value (for continuous lines)
+  // This ensures lines continue through weeks where a series didn't race
   data.forEach((_, idx) => {
     let lastValue: number | undefined;
     chartData.forEach((point) => {
@@ -76,6 +77,9 @@ export function VirtualIRatingChart({ data }: VirtualIRatingChartProps) {
     });
   });
 
+  // Show all 12 weeks - don't filter
+  const chartDataFiltered = chartData;
+
   const formatSeriesName = (name: string) => {
     // Shorten series names for legend
     if (name.includes('Production Car')) return 'Production Car';
@@ -85,13 +89,21 @@ export function VirtualIRatingChart({ data }: VirtualIRatingChartProps) {
     return name.split(' ').slice(0, 2).join(' ');
   };
 
+  if (chartDataFiltered.length === 0) {
+    return (
+      <div className="flex h-[400px] items-center justify-center text-zinc-500">
+        No iRating data available
+      </div>
+    );
+  }
+
   return (
     <div className="h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+        <LineChart data={chartDataFiltered} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-zinc-200 dark:stroke-zinc-700" />
           <XAxis
-            dataKey="dateLabel"
+            dataKey="weekLabel"
             tick={{ fontSize: 12 }}
             className="text-zinc-500"
           />
@@ -104,6 +116,8 @@ export function VirtualIRatingChart({ data }: VirtualIRatingChartProps) {
             content={({ active, payload, label }) => {
               if (!active || !payload || payload.length === 0) return null;
 
+              const weekData = chartDataFiltered.find((d) => d.weekLabel === label);
+
               return (
                 <div className="rounded-lg border bg-white p-3 shadow-lg dark:bg-zinc-800 dark:border-zinc-700">
                   <p className="font-medium mb-2">{label}</p>
@@ -111,21 +125,26 @@ export function VirtualIRatingChart({ data }: VirtualIRatingChartProps) {
                     if (entry.value === undefined) return null;
                     const seriesIdx = parseInt(entry.dataKey?.toString().split('_')[1] || '0');
                     const seriesData = data[seriesIdx];
-                    const delta = chartData.find((d) => d.dateLabel === label)?.[`delta_${seriesIdx}`];
-                    const track = chartData.find((d) => d.dateLabel === label)?.[`track_${seriesIdx}`];
+                    const delta = weekData?.[`delta_${seriesIdx}`];
+                    const track = weekData?.[`track_${seriesIdx}`];
 
                     return (
-                      <div key={idx} className="flex items-center gap-2 text-sm">
-                        <span
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: entry.color }}
-                        />
-                        <span className="font-medium">{formatSeriesName(seriesData?.seriesName || '')}</span>
-                        <span>{entry.value}</span>
-                        {typeof delta === 'number' && delta !== 0 && (
-                          <span className={delta > 0 ? 'text-green-600' : 'text-red-600'}>
-                            ({delta > 0 ? '+' : ''}{delta})
-                          </span>
+                      <div key={idx} className="text-sm mb-1">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: entry.color }}
+                          />
+                          <span className="font-medium">{formatSeriesName(seriesData?.seriesName || '')}</span>
+                          <span>{entry.value}</span>
+                          {typeof delta === 'number' && delta !== 0 && (
+                            <span className={delta > 0 ? 'text-green-600' : 'text-red-600'}>
+                              ({delta > 0 ? '+' : ''}{delta})
+                            </span>
+                          )}
+                        </div>
+                        {track && (
+                          <div className="text-xs text-zinc-500 ml-5">{track}</div>
                         )}
                       </div>
                     );
@@ -135,7 +154,7 @@ export function VirtualIRatingChart({ data }: VirtualIRatingChartProps) {
             }}
           />
           <Legend
-            formatter={(value, entry) => {
+            formatter={(value) => {
               const idx = parseInt(value.split('_')[1]);
               return formatSeriesName(data[idx]?.seriesName || '');
             }}

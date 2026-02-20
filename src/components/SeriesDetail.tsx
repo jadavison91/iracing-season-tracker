@@ -6,14 +6,17 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useSeriesRaces } from '@/hooks';
+import { useSeriesRaces, useSeriesSchedule } from '@/hooks';
 import { FinishPositionChart } from '@/components/charts/FinishPositionChart';
 import { RaceResultsTable } from '@/components/RaceResultsTable';
 import { RaceDetailModal } from '@/components/RaceDetailModal';
 import { RaceComparison } from '@/components/RaceComparison';
 import { RaceFiltersBar, RaceFilters, defaultFilters, applyRaceFilters } from '@/components/RaceFilters';
+import { SeasonScheduleTable } from '@/components/SeasonScheduleTable';
 import { EmptyState } from '@/components/EmptyState';
-import { RecentRace } from '@/lib/iracing/types';
+import { RecentRace, WeekResult } from '@/lib/iracing/types';
+
+type ViewMode = 'results' | 'schedule';
 
 interface SeriesDetailProps {
   customerId: number | null;
@@ -23,11 +26,13 @@ interface SeriesDetailProps {
 export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
   const router = useRouter();
   const { data, isLoading, error } = useSeriesRaces(customerId, seriesId);
+  const { weekResults, seasonTotal, weeksCounting, isLoading: scheduleLoading } = useSeriesSchedule(customerId, seriesId);
   const [selectedRace, setSelectedRace] = useState<RecentRace | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRaceIds, setSelectedRaceIds] = useState<number[]>([]);
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [filters, setFilters] = useState<RaceFilters>(defaultFilters);
+  const [viewMode, setViewMode] = useState<ViewMode>('schedule');
 
   const selectedRacesForComparison = data?.races.filter((r) =>
     selectedRaceIds.includes(r.subsessionId)
@@ -36,7 +41,17 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
   const filteredRaces = data?.races ? applyRaceFilters(data.races, filters) : [];
 
   const handleRaceClick = (subsessionId: number) => {
-    const race = data?.races.find((r) => r.subsessionId === subsessionId);
+    // First check in the series races data
+    let race = data?.races.find((r) => r.subsessionId === subsessionId);
+
+    // If not found, check in the schedule's week results
+    if (!race) {
+      for (const week of weekResults) {
+        race = week.allResults.find((r) => r.subsessionId === subsessionId);
+        if (race) break;
+      }
+    }
+
     if (race) {
       setSelectedRace(race);
       setModalOpen(true);
@@ -140,50 +155,119 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
         </CardContent>
       </Card>
 
-      {/* Race Results Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Race Results</CardTitle>
-              <CardDescription>Click a race for details · Select races to compare</CardDescription>
+      {/* View Toggle */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex gap-2">
+          <Button
+            variant={viewMode === 'schedule' ? 'default' : 'outline'}
+            onClick={() => setViewMode('schedule')}
+            size="sm"
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            Season Schedule
+          </Button>
+          <Button
+            variant={viewMode === 'results' ? 'default' : 'outline'}
+            onClick={() => setViewMode('results')}
+            size="sm"
+          >
+            <ListIcon className="mr-2 h-4 w-4" />
+            Race Results
+          </Button>
+        </div>
+        {seasonTotal > 0 && (
+          <div className="flex items-center gap-4 rounded-lg bg-green-50 dark:bg-green-950/30 px-4 py-2">
+            <div className="text-sm text-zinc-600 dark:text-zinc-400">
+              Season Total ({weeksCounting}/8 weeks counting)
             </div>
-            {selectedRaceIds.length >= 2 && (
-              <Button onClick={() => setComparisonOpen(true)}>
-                Compare {selectedRaceIds.length} Races
-              </Button>
-            )}
+            <div className="text-xl font-bold text-green-700 dark:text-green-400">
+              {seasonTotal} pts
+            </div>
           </div>
-          {selectedRaceIds.length === 1 && (
-            <p className="text-sm text-zinc-500 mt-2">
-              Select at least one more race to compare
-            </p>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <RaceFiltersBar
-            filters={filters}
-            onFiltersChange={setFilters}
-            totalRaces={races.length}
-            filteredCount={filteredRaces.length}
-          />
-          {filteredRaces.length > 0 ? (
-            <RaceResultsTable
-              races={filteredRaces}
-              onRaceClick={handleRaceClick}
-              selectable
-              selectedRaces={selectedRaceIds}
-              onSelectionChange={setSelectedRaceIds}
+        )}
+      </div>
+
+      {/* Season Schedule View */}
+      {viewMode === 'schedule' && (
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Season Schedule</CardTitle>
+                <CardDescription>
+                  12-week season grid with best results per week
+                </CardDescription>
+              </div>
+              {weekResults.length > 0 && (
+                <SeasonProgressBadge weekResults={weekResults} />
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {scheduleLoading ? (
+              <Skeleton className="h-96 w-full" />
+            ) : weekResults.length > 0 ? (
+              <SeasonScheduleTable
+                weekResults={weekResults}
+                onRaceClick={handleRaceClick}
+              />
+            ) : (
+              <EmptyState
+                variant="no-results"
+                title="No Schedule Data"
+                description="Schedule data is not available for this series."
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Race Results Table */}
+      {viewMode === 'results' && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Race Results</CardTitle>
+                <CardDescription>Click a race for details · Select races to compare</CardDescription>
+              </div>
+              {selectedRaceIds.length >= 2 && (
+                <Button onClick={() => setComparisonOpen(true)}>
+                  Compare {selectedRaceIds.length} Races
+                </Button>
+              )}
+            </div>
+            {selectedRaceIds.length === 1 && (
+              <p className="text-sm text-zinc-500 mt-2">
+                Select at least one more race to compare
+              </p>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <RaceFiltersBar
+              filters={filters}
+              onFiltersChange={setFilters}
+              totalRaces={races.length}
+              filteredCount={filteredRaces.length}
             />
-          ) : (
-            <EmptyState
-              variant="no-results"
-              title="No Matching Races"
-              description="No races match your current filters. Try adjusting your search criteria."
-            />
-          )}
-        </CardContent>
-      </Card>
+            {filteredRaces.length > 0 ? (
+              <RaceResultsTable
+                races={filteredRaces}
+                onRaceClick={handleRaceClick}
+                selectable
+                selectedRaces={selectedRaceIds}
+                onSelectionChange={setSelectedRaceIds}
+              />
+            ) : (
+              <EmptyState
+                variant="no-results"
+                title="No Matching Races"
+                description="No races match your current filters. Try adjusting your search criteria."
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Race Detail Modal */}
       <RaceDetailModal
@@ -262,5 +346,49 @@ function SeriesDetailSkeleton() {
         </CardContent>
       </Card>
     </>
+  );
+}
+
+function SeasonProgressBadge({ weekResults }: { weekResults: WeekResult[] }) {
+  const completed = weekResults.filter((w) => w.status === 'completed').length;
+  const skipped = weekResults.filter((w) => w.status === 'skipped').length;
+  const total = weekResults.length;
+  const raced = completed;
+
+  return (
+    <div className="text-right">
+      <div className="text-sm font-medium">
+        {raced} / {total - skipped} weeks
+      </div>
+      <div className="text-xs text-zinc-500">
+        {skipped > 0 && `${skipped} skipped`}
+      </div>
+    </div>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+      />
+    </svg>
+  );
+}
+
+function ListIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 6h16M4 10h16M4 14h16M4 18h16"
+      />
+    </svg>
   );
 }

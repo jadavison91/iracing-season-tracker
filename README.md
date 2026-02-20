@@ -11,18 +11,26 @@ Track and visualize your iRacing season performance with detailed race history, 
 
 ### Race History
 - **Full Season Data** - Fetches your complete race history for the current iRacing season
-- **Multi-Class Support** - Properly displays class positions vs overall positions for multi-class series (IMSA, ESS, etc.)
+- **Multi-Class Support** - Properly displays and tracks in-class positions for multi-class series (IMSA, ESS, etc.)
 - **Race Details** - Click any race to see lap times, rating changes, incidents, and position changes
 - **Filtering & Sorting** - Filter by track, position, incidents, or date range
 - **Race Comparison** - Select multiple races to compare performance side-by-side
+- **Series Detail View** - Deep dive into individual series with schedule, results, and statistics
+
+### Season Schedule
+- **Weekly Track Schedule** - View the full 12-week season schedule for each series
+- **Race Results by Week** - See your results for each week with points earned
+- **Counting Weeks Highlight** - Visual indication of which weeks count toward championship (best 8 of 12)
+- **Season Points Total** - Running total of championship points with counting weeks breakdown
+- **Drop Week Tracking** - Easily identify which weeks are being dropped from your championship total
 
 ### Charts & Analytics
-- **Finish Position Trends** - Track your finishing positions over time
-- **iRating Progression** - Visualize your iRating changes throughout the season
-- **Safety Rating Trends** - Monitor your SR progression
-- **Incident Analysis** - Track incident counts per race
-- **Strength of Field Distribution** - See the SoF range you've been racing in
-- **Achievements** - Best finishes, wins, podiums, and other milestones
+- **Virtual iRating by Series** - Track your iRating progression as if calculated per-series, shown week-by-week
+- **Championship Points by Series** - Bar chart and table showing points breakdown with best 8 weeks counting
+- **Finish Position Trends** - Track your in-class finishing positions over time with rolling average
+- **Incident Analysis** - Track incident counts per race with trend visualization
+- **Strength of Field Distribution** - See the SoF range you've been racing in and your performance in each bracket
+- **Achievement Stats** - Poles, wins, podiums, top 5s, and average finish broken down by series
 
 ### Multi-Driver Support
 - **Quick Switching** - Easily switch between different driver profiles

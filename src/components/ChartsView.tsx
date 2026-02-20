@@ -4,12 +4,13 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/EmptyState';
-import { useSeasonRaces } from '@/hooks';
+import { useRecentRaces, useSeasonRaces } from '@/hooks';
 import { VirtualIRatingChart } from '@/components/charts/VirtualIRatingChart';
 import { AchievementsTable } from '@/components/charts/AchievementsTable';
 import { IncidentTrendChart } from '@/components/charts/IncidentTrendChart';
 import { FinishTrendChart } from '@/components/charts/FinishTrendChart';
 import { SoFDistributionChart } from '@/components/charts/SoFDistributionChart';
+import { ChampionshipPointsChart } from '@/components/charts/ChampionshipPointsChart';
 import {
   mockAllRaces,
   calculateVirtualIRating,
@@ -17,6 +18,7 @@ import {
   getIncidentTrend,
   getSoFDistribution,
   getFinishPositionTrend,
+  getChampionshipPointsBySeries,
   USE_MOCK_DATA,
 } from '@/lib/mock-data';
 
@@ -25,33 +27,42 @@ interface ChartsViewProps {
 }
 
 export function ChartsView({ customerId }: ChartsViewProps) {
-  const { data: seasonRaces, isLoading } = useSeasonRaces(customerId);
+  // Use season-races for complete race data (championship points, achievements, etc.)
+  const { data: seasonRaces, isLoading: seasonLoading } = useSeasonRaces(customerId);
+  // Use recent-races for iRating data (has oldIRating/newIRating fields)
+  const { data: recentRaces, isLoading: recentLoading } = useRecentRaces(customerId);
 
-  // Use all mock races for charts (more historical data)
+  const isLoading = seasonLoading || recentLoading;
+
+  // Use season races for most charts (has all races with champ points)
   const races = USE_MOCK_DATA ? mockAllRaces : (seasonRaces || []);
+  // Use recent races for iRating chart (has iRating change data)
+  const racesWithIRating = USE_MOCK_DATA ? mockAllRaces : (recentRaces || []);
 
   // Calculate chart data
   const chartData = useMemo(() => {
-    if (races.length === 0) return null;
+    if (races.length === 0 && racesWithIRating.length === 0) return null;
 
-    // Get unique series IDs
-    const seriesIds = [...new Set(races.map((r) => r.seriesId))];
-
-    // Calculate virtual iRating for each series
-    const virtualIRatingData = seriesIds.map((seriesId) => ({
+    // Use races with iRating data for the virtual iRating chart
+    const iRatingSeriesIds = [...new Set(racesWithIRating.map((r) => r.seriesId))];
+    const virtualIRatingData = iRatingSeriesIds.map((seriesId) => ({
       seriesId,
-      seriesName: races.find((r) => r.seriesId === seriesId)?.seriesName || '',
-      data: calculateVirtualIRating(races, seriesId),
+      seriesName: racesWithIRating.find((r) => r.seriesId === seriesId)?.seriesName || '',
+      data: calculateVirtualIRating(racesWithIRating, seriesId),
     }));
+
+    // Use all season races for other charts (has complete champ points data)
+    const racesForStats = races.length > 0 ? races : racesWithIRating;
 
     return {
       virtualIRating: virtualIRatingData,
-      achievements: getSeriesAchievements(races),
-      incidentTrend: getIncidentTrend(races),
-      sofDistribution: getSoFDistribution(races),
-      finishTrend: getFinishPositionTrend(races),
+      achievements: getSeriesAchievements(racesForStats),
+      incidentTrend: getIncidentTrend(racesForStats),
+      sofDistribution: getSoFDistribution(racesForStats),
+      finishTrend: getFinishPositionTrend(racesForStats),
+      championshipPoints: getChampionshipPointsBySeries(racesForStats),
     };
-  }, [races]);
+  }, [races, racesWithIRating]);
 
   if (!customerId) {
     return (
@@ -77,7 +88,7 @@ export function ChartsView({ customerId }: ChartsViewProps) {
     );
   }
 
-  if (!chartData || races.length === 0) {
+  if (!chartData || (races.length === 0 && racesWithIRating.length === 0)) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
@@ -111,6 +122,19 @@ export function ChartsView({ customerId }: ChartsViewProps) {
         </CardHeader>
         <CardContent>
           <VirtualIRatingChart data={chartData.virtualIRating} />
+        </CardContent>
+      </Card>
+
+      {/* Championship Points by Series */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Championship Points by Series</CardTitle>
+          <CardDescription>
+            Season points breakdown showing best 8 weeks counting toward championship
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChampionshipPointsChart data={chartData.championshipPoints} />
         </CardContent>
       </Card>
 

@@ -169,6 +169,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 451,
     trackName: 'Rudskogen Motorsenter',
+    raceWeekNum: 0,
     startPosition: 7,
     finishPosition: 6,
     startPositionInClass: 6,
@@ -206,6 +207,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 465,
     trackName: 'Virginia International Raceway - Full Course',
+    raceWeekNum: 0,
     startPosition: 12,
     finishPosition: 34,
     startPositionInClass: 34,
@@ -243,6 +245,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 332,
     trackName: 'Wild West Motorsports Park',
+    raceWeekNum: 0,
     startPosition: 4,
     finishPosition: 1,
     startPositionInClass: 1,
@@ -280,6 +283,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 582,
     trackName: 'Winton Motor Raceway - Rallycross',
+    raceWeekNum: 0,
     startPosition: 7,
     finishPosition: 6,
     startPositionInClass: 6,
@@ -317,6 +321,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 581,
     trackName: 'Lucas Oil Speedway - Dirt Road',
+    raceWeekNum: 0,
     startPosition: 2,
     finishPosition: 3,
     startPositionInClass: 3,
@@ -354,6 +359,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 581,
     trackName: 'Lucas Oil Speedway - Dirt Road',
+    raceWeekNum: 0,
     startPosition: 1,
     finishPosition: 2,
     startPositionInClass: 2,
@@ -391,6 +397,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 332,
     trackName: 'Wild West Motorsports Park',
+    raceWeekNum: 0,
     startPosition: 1,
     finishPosition: 5,
     startPositionInClass: 5,
@@ -428,6 +435,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 275,
     trackName: 'USA International Speedway - Dirt',
+    raceWeekNum: 0,
     startPosition: 7,
     finishPosition: 7,
     startPositionInClass: 7,
@@ -465,6 +473,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 332,
     trackName: 'Wild West Motorsports Park',
+    raceWeekNum: 0,
     startPosition: 2,
     finishPosition: 1,
     startPositionInClass: 1,
@@ -502,6 +511,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 332,
     trackName: 'Wild West Motorsports Park',
+    raceWeekNum: 0,
     startPosition: 1,
     finishPosition: 2,
     startPositionInClass: 2,
@@ -539,6 +549,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 535,
     trackName: 'Miami International Autodrome - Extended MIA Loop',
+    raceWeekNum: 0,
     startPosition: 30,
     finishPosition: 32,
     startPositionInClass: 32,
@@ -576,6 +587,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 535,
     trackName: 'Miami International Autodrome - Extended MIA Loop',
+    raceWeekNum: 0,
     startPosition: 28,
     finishPosition: 20,
     startPositionInClass: 20,
@@ -613,6 +625,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 332,
     trackName: 'Wild West Motorsports Park',
+    raceWeekNum: 0,
     startPosition: 7,
     finishPosition: 7,
     startPositionInClass: 7,
@@ -650,6 +663,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 433,
     trackName: 'Watkins Glen International - Cup',
+    raceWeekNum: 0,
     startPosition: 9,
     finishPosition: 1,
     startPositionInClass: 1,
@@ -687,6 +701,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 46,
     trackName: 'Barber Motorsports Park - Full Course',
+    raceWeekNum: 0,
     startPosition: 6,
     finishPosition: 4,
     startPositionInClass: 4,
@@ -724,6 +739,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 293,
     trackName: 'Daytona Rallycross and Dirt Road - Rallycross Long',
+    raceWeekNum: 0,
     startPosition: 6,
     finishPosition: 6,
     startPositionInClass: 6,
@@ -761,6 +777,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 293,
     trackName: 'Daytona Rallycross and Dirt Road - Rallycross Long',
+    raceWeekNum: 0,
     startPosition: 3,
     finishPosition: 2,
     startPositionInClass: 2,
@@ -798,6 +815,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 298,
     trackName: 'Snetterton Circuit - 200',
+    raceWeekNum: 0,
     startPosition: 35,
     finishPosition: 26,
     startPositionInClass: 26,
@@ -835,6 +853,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 105,
     trackName: '[Legacy] Phoenix Raceway - 2008 Road Course',
+    raceWeekNum: 0,
     startPosition: 5,
     finishPosition: 6,
     startPositionInClass: 6,
@@ -872,6 +891,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 192,
     trackName: 'Daytona International Speedway - Road Course',
+    raceWeekNum: 0,
     startPosition: 37,
     finishPosition: 22,
     startPositionInClass: 22,
@@ -909,6 +929,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 332,
     trackName: 'Wild West Motorsports Park',
+    raceWeekNum: 0,
     startPosition: 4,
     finishPosition: 4,
     startPositionInClass: 4,
@@ -946,6 +967,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 218,
     trackName: 'Circuit Gilles Villeneuve',
+    raceWeekNum: 0,
     startPosition: 2,
     finishPosition: 2,
     startPositionInClass: 2,
@@ -983,6 +1005,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 485,
     trackName: 'Circuit Zandvoort - Grand Prix',
+    raceWeekNum: 0,
     startPosition: 31,
     finishPosition: 30,
     startPositionInClass: 30,
@@ -1020,6 +1043,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 472,
     trackName: '[Legacy] Phoenix Raceway - 2008 Dirt Road',
+    raceWeekNum: 0,
     startPosition: 4,
     finishPosition: 7,
     startPositionInClass: 7,
@@ -1057,6 +1081,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 472,
     trackName: '[Legacy] Phoenix Raceway - 2008 Dirt Road',
+    raceWeekNum: 0,
     startPosition: 1,
     finishPosition: 2,
     startPositionInClass: 2,
@@ -1094,6 +1119,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 105,
     trackName: '[Legacy] Phoenix Raceway - 2008 Road Course',
+    raceWeekNum: 0,
     startPosition: 37,
     finishPosition: 27,
     startPositionInClass: 27,
@@ -1131,6 +1157,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 475,
     trackName: 'MotorLand Aragón - Grand Prix',
+    raceWeekNum: 0,
     startPosition: 12,
     finishPosition: 15,
     startPositionInClass: 15,
@@ -1168,6 +1195,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 455,
     trackName: 'Motorsport Arena Oschersleben - B Course',
+    raceWeekNum: 0,
     startPosition: 9,
     finishPosition: 3,
     startPositionInClass: 3,
@@ -1205,6 +1233,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 571,
     trackName: 'Sonoma Raceway - Sportscar Alt',
+    raceWeekNum: 0,
     startPosition: 22,
     finishPosition: 16,
     startPositionInClass: 16,
@@ -1242,6 +1271,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 471,
     trackName: 'Daytona Rallycross and Dirt Road - Dirt Road Short',
+    raceWeekNum: 0,
     startPosition: 4,
     finishPosition: 1,
     startPositionInClass: 1,
@@ -1279,6 +1309,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 332,
     trackName: 'Wild West Motorsports Park',
+    raceWeekNum: 0,
     startPosition: 6,
     finishPosition: 3,
     startPositionInClass: 3,
@@ -1316,6 +1347,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 349,
     trackName: 'Circuit de Barcelona Catalunya - Historic',
+    raceWeekNum: 0,
     startPosition: 3,
     finishPosition: 3,
     startPositionInClass: 3,
@@ -1353,6 +1385,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 9,
     trackName: 'Summit Point Raceway',
+    raceWeekNum: 0,
     startPosition: 41,
     finishPosition: 33,
     startPositionInClass: 33,
@@ -1390,6 +1423,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 483,
     trackName: 'Chicago Street Course - 2023 Cup',
+    raceWeekNum: 0,
     startPosition: 1,
     finishPosition: 1,
     startPositionInClass: 1,
@@ -1427,6 +1461,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 9,
     trackName: 'Summit Point Raceway',
+    raceWeekNum: 0,
     startPosition: 1,
     finishPosition: 15,
     startPositionInClass: 15,
@@ -1464,6 +1499,7 @@ export const mockRecentRaces: RecentRace[] = [
     eventTypeName: 'Race',
     trackId: 9,
     trackName: 'Summit Point Raceway',
+    raceWeekNum: 0,
     startPosition: 1,
     finishPosition: 2,
     startPositionInClass: 2,
@@ -1552,17 +1588,55 @@ export function calculateVirtualIRating(races: RecentRace[], seriesId: number) {
   const baseline = seriesRaces[0].oldIRating;
   let runningTotal = baseline;
 
-  return seriesRaces.map((race) => {
+  // Calculate running iRating for each race
+  const raceData = seriesRaces.map((race) => {
     const delta = race.newIRating - race.oldIRating;
     runningTotal += delta;
     return {
       date: race.sessionStartTime,
+      weekNum: race.raceWeekNum,
       trackName: race.trackName,
       virtualIRating: runningTotal,
       delta,
       baseline,
     };
   });
+
+  // Aggregate by week - take the final iRating for each week
+  const weekMap = new Map<number, typeof raceData[0]>();
+  let weekDelta = 0;
+  let prevWeekIRating = baseline;
+
+  raceData.forEach((race) => {
+    const existing = weekMap.get(race.weekNum);
+    if (!existing || new Date(race.date) > new Date(existing.date)) {
+      // Calculate cumulative delta for the week
+      if (!existing) {
+        weekDelta = race.virtualIRating - prevWeekIRating;
+      } else {
+        weekDelta = race.virtualIRating - prevWeekIRating;
+      }
+      weekMap.set(race.weekNum, {
+        ...race,
+        delta: weekDelta,
+      });
+    }
+  });
+
+  // Convert to array sorted by week, tracking cumulative delta per week
+  const weeks = Array.from(weekMap.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([weekNum, data], index, arr) => {
+      const prevIRating = index > 0 ? arr[index - 1][1].virtualIRating : baseline;
+      return {
+        ...data,
+        weekNum,
+        displayWeek: weekNum + 1, // Convert 0-indexed to 1-indexed for display
+        delta: data.virtualIRating - prevIRating,
+      };
+    });
+
+  return weeks;
 }
 
 /**
@@ -1594,13 +1668,14 @@ export function getSeriesAchievements(races: RecentRace[]): SeriesAchievements[]
   });
 
   return Array.from(seriesMap.entries()).map(([seriesId, seriesRaces]) => {
-    const poles = seriesRaces.filter((r) => r.startPosition === 1).length;
-    const wins = seriesRaces.filter((r) => r.finishPosition === 1).length;
-    const podiums = seriesRaces.filter((r) => r.finishPosition <= 3).length;
-    const top5s = seriesRaces.filter((r) => r.finishPosition <= 5).length;
+    // Use in-class positions for multi-class race accuracy
+    const poles = seriesRaces.filter((r) => r.startPositionInClass === 1).length;
+    const wins = seriesRaces.filter((r) => r.finishPositionInClass === 1).length;
+    const podiums = seriesRaces.filter((r) => r.finishPositionInClass <= 3).length;
+    const top5s = seriesRaces.filter((r) => r.finishPositionInClass <= 5).length;
     const cleanRaces = seriesRaces.filter((r) => r.incidents === 0).length;
     const totalIncidents = seriesRaces.reduce((sum, r) => sum + r.incidents, 0);
-    const avgFinish = seriesRaces.reduce((sum, r) => sum + r.finishPosition, 0) / seriesRaces.length;
+    const avgFinish = seriesRaces.reduce((sum, r) => sum + r.finishPositionInClass, 0) / seriesRaces.length;
 
     return {
       seriesId,
@@ -1669,19 +1744,86 @@ export function getFinishPositionTrend(races: RecentRace[]) {
   const sorted = races
     .sort((a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime());
 
-  // Calculate rolling average (last 5 races)
+  // Calculate rolling average (last 5 races) using in-class position for multi-class races
   return sorted.map((race, index) => {
     const windowStart = Math.max(0, index - 4);
     const window = sorted.slice(windowStart, index + 1);
-    const rollingAvg = window.reduce((sum, r) => sum + r.finishPosition, 0) / window.length;
+    const rollingAvg = window.reduce((sum, r) => sum + r.finishPositionInClass, 0) / window.length;
 
     return {
       date: race.sessionStartTime,
       seriesId: race.seriesId,
       seriesName: race.seriesName.split(' ').slice(0, 2).join(' '),
-      finishPosition: race.finishPosition,
+      finishPosition: race.finishPositionInClass,
       rollingAvg: Math.round(rollingAvg * 10) / 10,
       trackName: race.trackName,
     };
   });
+}
+
+/**
+ * Get championship points by series
+ */
+export interface SeriesChampionshipPoints {
+  seriesId: number;
+  seriesName: string;
+  shortName: string;
+  totalPoints: number;
+  countingPoints: number; // Sum of best 8 weeks
+  racesEntered: number;
+  weeksRaced: number;
+  avgPointsPerRace: number;
+}
+
+export function getChampionshipPointsBySeries(races: RecentRace[]): SeriesChampionshipPoints[] {
+  const seriesMap = new Map<number, RecentRace[]>();
+
+  races.forEach((race) => {
+    const existing = seriesMap.get(race.seriesId) || [];
+    existing.push(race);
+    seriesMap.set(race.seriesId, existing);
+  });
+
+  return Array.from(seriesMap.entries())
+    .map(([seriesId, seriesRaces]) => {
+      // Group races by week number and get best result per week
+      const weeklyBest = new Map<number, number>();
+      seriesRaces.forEach((race) => {
+        const currentBest = weeklyBest.get(race.raceWeekNum);
+        if (!currentBest || race.champPoints > currentBest) {
+          weeklyBest.set(race.raceWeekNum, race.champPoints);
+        }
+      });
+
+      // Sum all points
+      const totalPoints = Array.from(weeklyBest.values()).reduce((sum, pts) => sum + pts, 0);
+
+      // Get best 8 weeks for counting points
+      const sortedWeeklyPoints = Array.from(weeklyBest.values()).sort((a, b) => b - a);
+      const countingPoints = sortedWeeklyPoints.slice(0, 8).reduce((sum, pts) => sum + pts, 0);
+
+      const seriesName = seriesRaces[0].seriesName;
+
+      return {
+        seriesId,
+        seriesName,
+        shortName: formatSeriesShortName(seriesName),
+        totalPoints,
+        countingPoints,
+        racesEntered: seriesRaces.length,
+        weeksRaced: weeklyBest.size,
+        avgPointsPerRace: Math.round(totalPoints / seriesRaces.length),
+      };
+    })
+    .sort((a, b) => b.countingPoints - a.countingPoints); // Sort by counting points descending
+}
+
+function formatSeriesShortName(name: string): string {
+  if (name.includes('Production Car')) return 'Production Car';
+  if (name.includes('Spec Racer Ford')) return 'Spec Racer Ford';
+  if (name.includes('Pro 2 Lite Off-Road Rookie')) return 'Pro 2 Lite Rookie';
+  if (name.includes('Advanced Pro2 Lite')) return 'Adv Pro2 Lite';
+  if (name.includes('FIA Cross Car')) return 'FIA Cross Car';
+  if (name.includes('Mustang')) return 'Mustang GT4';
+  return name.split(' ').slice(0, 2).join(' ');
 }

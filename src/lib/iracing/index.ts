@@ -21,6 +21,7 @@ export {
   searchMemberResults,
   getSeries,
   getSeriesAssets,
+  getSeriesSeasons,
   getSeasonStandings,
   getSeasonResults,
   getSubsessionResults,

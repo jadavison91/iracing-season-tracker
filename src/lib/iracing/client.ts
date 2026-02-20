@@ -349,6 +349,20 @@ export async function getSeriesAssets(): Promise<Record<string, { logo: string }
   return fetchFromApi<Record<string, { logo: string }>>('/series/assets');
 }
 
+/**
+ * Get series seasons with full schedule information
+ * Note: The iRacing API returns ALL series seasons regardless of the series_id parameter,
+ * so filtering must be done client-side.
+ * @param seriesId - Series ID (optional - but filtering still needed on response)
+ */
+export async function getSeriesSeasons(seriesId?: number): Promise<Record<string, unknown>[]> {
+  const params: Record<string, string> = {};
+  if (seriesId !== undefined) {
+    params.series_id = seriesId.toString();
+  }
+  return fetchFromApi<Record<string, unknown>[]>('/series/seasons', params);
+}
+
 // ============================================================================
 // Season/Results Endpoints
 // ============================================================================

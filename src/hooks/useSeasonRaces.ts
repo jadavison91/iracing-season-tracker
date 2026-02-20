@@ -39,6 +39,7 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
     eventTypeName: String(raw.event_type_name ?? raw.eventTypeName ?? 'Race'),
     trackId: toNumber(raw.track_id ?? raw.trackId ?? track?.track_id),
     trackName: String(raw.track_name ?? raw.trackName ?? track?.track_name ?? 'Unknown Track'),
+    raceWeekNum: toNumber(raw.race_week_num ?? raw.raceWeekNum, 0),
     startPosition: adjustPosition(startPos),
     finishPosition: adjustPosition(finishPos),
     startPositionInClass: adjustPosition(startPosInClass),

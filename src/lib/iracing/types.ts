@@ -68,6 +68,7 @@ export interface RecentRace {
   eventTypeName: string;
   trackId: number;
   trackName: string;
+  raceWeekNum: number; // 0-indexed (0-11)
   startPosition: number;
   finishPosition: number;
   startPositionInClass: number;
@@ -135,6 +136,43 @@ export interface SeriesSchedule {
   trackId: number;
   trackName: string;
   configName?: string;
+}
+
+// ============================================================================
+// Season Schedule Types (Phase 4)
+// ============================================================================
+
+export interface SeasonScheduleData {
+  seriesId: number;
+  seriesName: string;
+  seasonId: number;
+  seasonYear: number;
+  seasonQuarter: number; // 1-4
+  seasonName: string;
+  weeks: WeekSchedule[];
+}
+
+export interface WeekSchedule {
+  raceWeekNum: number; // 0-11 (iRacing uses 0-indexed)
+  displayWeek: number; // 1-12 (for display)
+  trackId: number;
+  trackName: string;
+  trackConfig?: string;
+  startDate: string; // ISO date string
+  endDate: string; // ISO date string
+  isActive: boolean;
+  isComplete: boolean;
+}
+
+export interface WeekResult {
+  weekNum: number;
+  displayWeek: number;
+  schedule: WeekSchedule;
+  status: 'completed' | 'active' | 'upcoming' | 'skipped';
+  bestResult: RecentRace | null;
+  totalAttempts: number;
+  allResults: RecentRace[];
+  isCounting: boolean; // True if this week is in the top 8 by championship points
 }
 
 export interface SeriesSummary {
