@@ -30,6 +30,7 @@ export {
   getTracks,
   getTrackAssets,
   getCars,
+  getCarAssets,
   getConstants,
   IRacingApiError,
 } from './client';

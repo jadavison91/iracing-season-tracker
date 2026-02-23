@@ -485,10 +485,38 @@ export async function getTracks(): Promise<Record<string, unknown>[]> {
 }
 
 /**
- * Get track assets (images, etc.)
+ * Get track assets (images, descriptions, maps, etc.)
+ * Returns a map of track_id to asset data including:
+ * - detail_copy: HTML description with track history
+ * - large_image / small_image: Track photos
+ * - gallery_images: Gallery image count
+ * - logo: Track logo
+ * - track_map: URL to SVG track map
+ * - track_map_layers: Object with SVG layer URLs
+ * - coordinates: GPS coordinates
  */
-export async function getTrackAssets(): Promise<Record<string, { logo: string; map: string }>> {
-  return fetchFromApi<Record<string, { logo: string; map: string }>>('/track/assets');
+export async function getTrackAssets(): Promise<Record<string, {
+  track_id: number;
+  detail_copy: string;
+  large_image: string;
+  small_image: string;
+  gallery_images: string;
+  gallery_prefix: string | null;
+  logo: string;
+  folder: string;
+  track_map: string;
+  track_map_layers: {
+    background: string;
+    inactive: string;
+    active: string;
+    pitroad: string;
+    'start-finish': string;
+    turns: string;
+  };
+  coordinates: string;
+  north: string;
+}>> {
+  return fetchFromApi('/track/assets');
 }
 
 // ============================================================================
@@ -500,6 +528,28 @@ export async function getTrackAssets(): Promise<Record<string, { logo: string; m
  */
 export async function getCars(): Promise<Record<string, unknown>[]> {
   return fetchFromApi<Record<string, unknown>[]>('/car/get');
+}
+
+/**
+ * Get car assets (images, descriptions, etc.)
+ * Returns a map of car_id to asset data including:
+ * - detail_copy: HTML description
+ * - detail_techspecs_copy: Technical specs
+ * - detail_screen_shot_images: Screenshot paths
+ * - large_image / small_image: Car photos
+ * - logo: Brand logo
+ */
+export async function getCarAssets(): Promise<Record<string, {
+  car_id: number;
+  detail_copy: string;
+  detail_techspecs_copy: string;
+  detail_screen_shot_images: string;
+  large_image: string;
+  small_image: string;
+  logo: string;
+  folder: string;
+}>> {
+  return fetchFromApi('/car/assets');
 }
 
 // ============================================================================

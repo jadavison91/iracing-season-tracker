@@ -144,6 +144,24 @@ Create a lightweight, fast-loading dashboard that answers the question: "How am 
 - Share achievements on social media
 - Driver comparison widgets
 
+**Phase 5 - Visual Enhancements & Media** (API Research Complete)
+
+**Available from iRacing API:**
+- **Track Assets** (`/track/assets`): 461 tracks with `detail_copy` (HTML descriptions), `large_image`, `small_image`, `gallery_images`, `logo`, `track_map` (SVG with layers), `coordinates`
+- **Car Assets** (`/car/assets`): 183 cars with `detail_copy`, `detail_techspecs_copy`, `detail_screen_shot_images`, `large_image`, `small_image`, `logo`
+- **Series Assets** (`/series/assets`): 147 series with `logo`, `series_copy` (HTML description)
+
+**Tasks:**
+- [ ] Add track photos and descriptions to race detail popup
+  - Use `large_image` or `gallery_images` for track photo
+  - Display `detail_copy` (parsed HTML) for track description
+  - Show `track_map` SVG for track layout
+- [ ] Add car images on series page
+  - Use `/car/assets` to get car images by car_id
+  - For multi-class, show most frequently driven car based on race history
+  - Fall back to random car from class if no history
+- [ ] UI refresh - give the app a more custom, polished feel (currently looks like generic AI-generated Next.js site)
+
 **Not Planned**
 - Live timing during races (requires different SDK - node-irsdk)
 - Setup sharing/management

@@ -54,7 +54,14 @@ export function ChampionshipPointsChart({ data }: ChampionshipPointsChartProps) 
 
                 return (
                   <div className="rounded-lg border bg-white p-3 shadow-lg dark:bg-zinc-800 dark:border-zinc-700">
-                    <p className="font-medium mb-2">{seriesData.seriesName}</p>
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="font-medium">{seriesData.seriesName}</p>
+                      {seriesData.carClassName && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                          {seriesData.carClassName}
+                        </span>
+                      )}
+                    </div>
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between gap-4">
                         <span className="text-zinc-500">Counting Points:</span>
@@ -114,7 +121,7 @@ export function ChampionshipPointsChart({ data }: ChampionshipPointsChartProps) 
           <tbody>
             {data.map((series, index) => (
               <tr
-                key={series.seriesId}
+                key={`${series.seriesId}-${series.carClassName || 'all'}`}
                 className="border-b dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
               >
                 <td className="px-3 py-2">
@@ -124,6 +131,11 @@ export function ChampionshipPointsChart({ data }: ChampionshipPointsChartProps) 
                       style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     />
                     <span className="font-medium">{series.shortName}</span>
+                    {series.carClassName && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                        {series.carClassName}
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-right font-bold text-green-600 dark:text-green-400">

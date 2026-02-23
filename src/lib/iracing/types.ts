@@ -68,6 +68,7 @@ export interface RecentRace {
   eventTypeName: string;
   trackId: number;
   trackName: string;
+  trackCategoryId: number; // 1=oval, 2=road, 3=dirt_oval, 4=dirt_road
   raceWeekNum: number; // 0-indexed (0-11)
   startPosition: number;
   finishPosition: number;

@@ -7,3 +7,5 @@ export { useSeriesRaces } from './useSeriesRaces';
 export { useSeriesSchedule } from './useSeriesSchedule';
 export { useSubsessionDetails } from './useSubsessionDetails';
 export { useIRatingHistory } from './useIRatingHistory';
+export { useTrackAssets, getTrackImageUrl, getTrackMapUrl, getTrackLogoUrl } from './useTrackAssets';
+export { useCarAssets, getCarImageUrl, getCarLogoUrl } from './useCarAssets';

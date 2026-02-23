@@ -38,6 +38,7 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
     eventTypeName: String(raw.event_type_name ?? raw.eventTypeName ?? 'Race'),
     trackId: toNumber(raw.track_id ?? raw.trackId ?? track?.track_id),
     trackName: String(raw.track_name ?? raw.trackName ?? track?.track_name ?? 'Unknown Track'),
+    trackCategoryId: toNumber(raw.track_category_id ?? raw.license_category_id ?? raw.category_id ?? track?.category_id, 0),
     raceWeekNum: toNumber(raw.race_week_num ?? raw.raceWeekNum, 0),
     startPosition: adjustPosition(startPos),
     finishPosition: adjustPosition(finishPos),
@@ -318,22 +319,48 @@ export function useRacesByDiscipline() {
       dirt_oval: [],
     };
 
-    // Group races by inferred discipline from series name
-    // In production, this would come from series metadata
+    // Group races by discipline using trackCategoryId when available, fallback to string matching
     data.races.forEach(race => {
+      const catId = race.trackCategoryId;
       const name = (race.seriesName || '').toLowerCase();
+      const track = (race.trackName || '').toLowerCase();
 
-      if (name.includes('dirt') && name.includes('oval')) {
-        result.dirt_oval.push(race);
-      } else if (name.includes('dirt') || name.includes('off-road') || name.includes('offroad') || name.includes('rallycross') || name.includes('pro 2') || name.includes('cross car')) {
-        result.dirt_road.push(race);
-      } else if (name.includes('oval') || name.includes('nascar') || name.includes('arca') || name.includes('truck')) {
+      // Use trackCategoryId if available (1=oval, 2=road, 3=dirt_oval, 4=dirt_road)
+      if (catId === 1) {
         result.oval.push(race);
-      } else if (name.includes('formula') || name.includes(' f1') || name.includes(' f2') || name.includes(' f3') || name.includes('ir-04') || name.includes('usf') || name.includes('indy')) {
-        result.formula.push(race);
+      } else if (catId === 3) {
+        result.dirt_oval.push(race);
+      } else if (catId === 4) {
+        result.dirt_road.push(race);
+      } else if (catId === 2) {
+        // Road category - distinguish between formula and sports car
+        if (name.includes('formula') || name.includes(' f1') || name.includes(' f2') || name.includes(' f3') ||
+            name.includes('ir-04') || name.includes('usf') || name.includes('indy')) {
+          result.formula.push(race);
+        } else {
+          result.sports_car.push(race);
+        }
       } else {
-        // Default road racing to sports_car
-        result.sports_car.push(race);
+        // Fallback to string matching if no category ID
+        const dirtRoadKeywords = ['dirt', 'off-road', 'off road', 'offroad', 'rallycross', 'rx',
+                                   'pro 2', 'pro2', 'pro 4', 'pro4', 'cross car', 'trophy truck',
+                                   'stadium truck', 'short course', 'pro lite'];
+        const dirtOvalKeywords = ['dirt oval', 'sprint car', 'world of outlaws', 'usac', 'midget',
+                                   'silver crown', 'dirt late model', 'ump modified'];
+        const ovalKeywords = ['oval', 'nascar', 'arca', 'truck series', 'superspeedway'];
+        const formulaKeywords = ['formula', ' f1', ' f2', ' f3', 'ir-04', 'usf', 'indy'];
+
+        if (dirtOvalKeywords.some(kw => name.includes(kw))) {
+          result.dirt_oval.push(race);
+        } else if (dirtRoadKeywords.some(kw => name.includes(kw) || track.includes(kw))) {
+          result.dirt_road.push(race);
+        } else if (ovalKeywords.some(kw => name.includes(kw))) {
+          result.oval.push(race);
+        } else if (formulaKeywords.some(kw => name.includes(kw))) {
+          result.formula.push(race);
+        } else {
+          result.sports_car.push(race);
+        }
       }
     });
 

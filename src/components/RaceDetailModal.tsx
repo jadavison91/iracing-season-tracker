@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentRace, formatLapTime, formatIRating, formatSafetyRating } from '@/lib/iracing/types';
-import { useSubsessionDetails } from '@/hooks';
+import { useSubsessionDetails, useTrackAssets, getTrackLogoUrl, getTrackMapUrl } from '@/hooks';
 
 interface RaceDetailModalProps {
   race: RecentRace | null;
@@ -25,7 +26,15 @@ export function RaceDetailModal({ race, customerId, open, onOpenChange }: RaceDe
     customerId
   );
 
+  // Fetch track assets for images
+  const { data: trackAssets } = useTrackAssets();
+
   if (!race) return null;
+
+  // Get track asset for this race
+  const trackAsset = trackAssets?.[race.trackId.toString()];
+  const trackLogoUrl = getTrackLogoUrl(trackAsset);
+  const trackMapUrl = getTrackMapUrl(trackAsset);
 
   // Use detailed data when available, otherwise fall back to race data
   const driverResult = details?.driverResult;
@@ -86,6 +95,36 @@ export function RaceDetailModal({ race, customerId, open, onOpenChange }: RaceDe
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Track Logo and Map */}
+          {(trackLogoUrl || trackMapUrl) && (
+            <div className="flex gap-3 rounded-lg overflow-hidden">
+              {trackLogoUrl && (
+                <div className="relative flex-1 h-24 min-w-0 flex items-center justify-center bg-white dark:bg-zinc-800 rounded-lg p-3">
+                  <Image
+                    src={trackLogoUrl}
+                    alt={race.trackName}
+                    fill
+                    className="object-contain p-2"
+                    sizes="300px"
+                    priority
+                  />
+                </div>
+              )}
+              {trackMapUrl && (
+                <div className="relative w-24 h-24 flex-shrink-0 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-lg">
+                  <Image
+                    src={trackMapUrl}
+                    alt={`${race.trackName} track map`}
+                    fill
+                    className="object-contain p-2"
+                    sizes="96px"
+                    unoptimized
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Main Result */}
           <div className="flex items-center justify-around rounded-lg bg-zinc-100 p-4 dark:bg-zinc-800">
             <div className="text-center">

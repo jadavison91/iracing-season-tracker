@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +23,12 @@ interface SeriesDetailProps {
   seriesId: number;
 }
 
+interface CarOption {
+  carId: number;
+  carName: string;
+  raceCount: number;
+}
+
 export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
   const router = useRouter();
   const { data, isLoading, error } = useSeriesRaces(customerId, seriesId);
@@ -33,12 +39,138 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [filters, setFilters] = useState<RaceFilters>(defaultFilters);
   const [viewMode, setViewMode] = useState<ViewMode>('schedule');
+  const [selectedCarId, setSelectedCarId] = useState<number | null>(null);
+
+  // Compute available cars from races
+  const carOptions: CarOption[] = useMemo(() => {
+    if (!data?.races) return [];
+    const carMap = new Map<number, { name: string; count: number }>();
+    data.races.forEach((race) => {
+      if (race.carId) {
+        const existing = carMap.get(race.carId);
+        if (existing) {
+          existing.count++;
+        } else {
+          carMap.set(race.carId, { name: race.carName || `Car ${race.carId}`, count: 1 });
+        }
+      }
+    });
+    return Array.from(carMap.entries())
+      .map(([carId, { name, count }]) => ({ carId, carName: name, raceCount: count }))
+      .sort((a, b) => b.raceCount - a.raceCount);
+  }, [data?.races]);
+
+  const hasMultipleCars = carOptions.length > 1;
+
+  // Filter races by selected car (if any)
+  const carFilteredRaces = useMemo(() => {
+    if (!data?.races) return [];
+    if (!selectedCarId) return data.races;
+    return data.races.filter((r) => r.carId === selectedCarId);
+  }, [data?.races, selectedCarId]);
+
+  // Recalculate stats for filtered races
+  const filteredStats = useMemo(() => {
+    const races = carFilteredRaces;
+    if (races.length === 0) return data?.stats;
+
+    const finishPositions = races.map((r) => r.finishPositionInClass);
+    const startPositions = races.map((r) => r.startPositionInClass);
+    const incidents = races.map((r) => r.incidents);
+    const sofs = races.map((r) => r.strengthOfField);
+
+    return {
+      totalRaces: races.length,
+      totalPoints: races.reduce((sum, r) => sum + r.champPoints, 0),
+      avgFinish: Math.round((finishPositions.reduce((a, b) => a + b, 0) / races.length) * 10) / 10,
+      avgStart: Math.round((startPositions.reduce((a, b) => a + b, 0) / races.length) * 10) / 10,
+      bestFinish: Math.min(...finishPositions),
+      worstFinish: Math.max(...finishPositions),
+      wins: finishPositions.filter((p) => p === 1).length,
+      podiums: finishPositions.filter((p) => p <= 3).length,
+      top5s: finishPositions.filter((p) => p <= 5).length,
+      totalIncidents: incidents.reduce((a, b) => a + b, 0),
+      avgIncidents: Math.round((incidents.reduce((a, b) => a + b, 0) / races.length) * 10) / 10,
+      avgSoF: Math.round(sofs.reduce((a, b) => a + b, 0) / races.length),
+    };
+  }, [carFilteredRaces, data?.stats]);
+
+  // Filter week results by selected car
+  const carFilteredWeekResults: WeekResult[] = useMemo(() => {
+    if (!selectedCarId) return weekResults;
+
+    // First pass: filter races and calculate best results
+    const filteredWeeks = weekResults.map((week) => {
+      // Filter allResults to only include races with the selected car
+      const filteredAllResults = week.allResults.filter((r) => r.carId === selectedCarId);
+
+      // Find best result from filtered races
+      const bestResult = filteredAllResults.length > 0
+        ? filteredAllResults.reduce((best, r) =>
+            !best || r.champPoints > best.champPoints ? r : best,
+            null as RecentRace | null
+          )
+        : null;
+
+      // Determine status based on filtered results
+      // If week was completed but no races with this car, mark as 'skipped' (week passed, didn't race this car)
+      // Keep 'upcoming' and 'active' as-is since those are time-based
+      let status = week.status;
+      if (week.status === 'completed' && filteredAllResults.length === 0) {
+        status = 'skipped';
+      }
+
+      return {
+        ...week,
+        allResults: filteredAllResults,
+        bestResult,
+        totalAttempts: filteredAllResults.length,
+        status,
+        isCounting: false, // Will be set in second pass
+      };
+    });
+
+    // Second pass: determine which weeks are counting (top 8 by points)
+    const weeksWithPoints = filteredWeeks
+      .filter((w) => w.bestResult && w.status === 'completed')
+      .map((w) => ({ weekNum: w.weekNum, points: w.bestResult?.champPoints || 0 }))
+      .sort((a, b) => b.points - a.points)
+      .slice(0, 8)
+      .map((w) => w.weekNum);
+
+    const countingWeekNums = new Set(weeksWithPoints);
+
+    return filteredWeeks.map((week) => ({
+      ...week,
+      isCounting: countingWeekNums.has(week.weekNum),
+    }));
+  }, [weekResults, selectedCarId]);
+
+  // Recalculate season totals for filtered results
+  const filteredSeasonStats = useMemo(() => {
+    const completedWeeks = carFilteredWeekResults.filter(
+      (w) => w.status === 'completed' && w.bestResult
+    );
+
+    // Get points from best results, sort descending, take top 8
+    const weekPoints = completedWeeks
+      .map((w) => w.bestResult?.champPoints || 0)
+      .sort((a, b) => b - a);
+
+    const countingWeeks = weekPoints.slice(0, 8);
+    const total = countingWeeks.reduce((sum, pts) => sum + pts, 0);
+
+    return {
+      seasonTotal: total,
+      weeksCounting: countingWeeks.length,
+    };
+  }, [carFilteredWeekResults]);
 
   const selectedRacesForComparison = data?.races.filter((r) =>
     selectedRaceIds.includes(r.subsessionId)
   ) || [];
 
-  const filteredRaces = data?.races ? applyRaceFilters(data.races, filters) : [];
+  const filteredRaces = carFilteredRaces ? applyRaceFilters(carFilteredRaces, filters) : [];
 
   const handleRaceClick = (subsessionId: number) => {
     // First check in the series races data
@@ -123,23 +255,70 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
       {/* Series Header */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-2xl">{seriesName}</CardTitle>
-          <CardDescription>Season performance summary</CardDescription>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <CardTitle className="text-2xl">{seriesName}</CardTitle>
+              <CardDescription>Season performance summary</CardDescription>
+            </div>
+            {/* Car selector for multi-car series */}
+            {hasMultipleCars && (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedCarId(null)}
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                    selectedCarId === null
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                      : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
+                  }`}
+                >
+                  All Cars ({data?.races.length})
+                </button>
+                {carOptions.map((car) => (
+                  <button
+                    key={car.carId}
+                    onClick={() => setSelectedCarId(car.carId)}
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                      selectedCarId === car.carId
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                        : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
+                    }`}
+                  >
+                    {car.carName} ({car.raceCount})
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
-            <StatBox label="Races" value={stats.totalRaces} />
-            <StatBox label="Points" value={stats.totalPoints} />
-            <StatBox label="Avg Finish" value={stats.avgFinish} />
-            <StatBox label="Avg Start" value={stats.avgStart} />
-            <StatBox label="Best" value={`P${stats.bestFinish}`} highlight="green" />
-            <StatBox label="Worst" value={`P${stats.worstFinish}`} />
-            <StatBox label="Wins" value={stats.wins} highlight={stats.wins > 0 ? 'gold' : undefined} />
-            <StatBox label="Podiums" value={stats.podiums} />
-            <StatBox label="Top 5s" value={stats.top5s} />
-            <StatBox label="Avg Inc" value={`${stats.avgIncidents}x`} />
-            <StatBox label="Total Inc" value={`${stats.totalIncidents}x`} />
-            <StatBox label="Avg SoF" value={stats.avgSoF.toLocaleString()} />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Races & Points */}
+            <StatGroup title="Season">
+              <StatBox label="Races" value={filteredStats?.totalRaces ?? 0} size="large" />
+              <StatBox label="Points" value={filteredStats?.totalPoints ?? 0} size="large" />
+            </StatGroup>
+
+            {/* Position Stats */}
+            <StatGroup title="Positions">
+              <StatBox label="Avg Finish" value={filteredStats?.avgFinish ?? 0} />
+              <StatBox label="Avg Start" value={filteredStats?.avgStart ?? 0} />
+              <StatBox label="Best" value={`P${filteredStats?.bestFinish ?? '-'}`} highlight="green" />
+              <StatBox label="Worst" value={`P${filteredStats?.worstFinish ?? '-'}`} highlight="red" />
+            </StatGroup>
+
+            {/* Highlights */}
+            <StatGroup title="Highlights">
+              <StatBox label="Wins" value={filteredStats?.wins ?? 0} highlight={(filteredStats?.wins ?? 0) > 0 ? 'gold' : undefined} />
+              <StatBox label="Podiums" value={filteredStats?.podiums ?? 0} highlight={(filteredStats?.podiums ?? 0) > 0 ? 'bronze' : undefined} />
+              <StatBox label="Top 5s" value={filteredStats?.top5s ?? 0} />
+            </StatGroup>
+
+            {/* Incidents & Field */}
+            <StatGroup title="Race Quality">
+              <StatBox label="Avg Inc" value={`${filteredStats?.avgIncidents ?? 0}x`} />
+              <StatBox label="Total Inc" value={`${filteredStats?.totalIncidents ?? 0}x`} />
+              <StatBox label="Avg SoF" value={(filteredStats?.avgSoF ?? 0).toLocaleString()} />
+            </StatGroup>
           </div>
         </CardContent>
       </Card>
@@ -148,10 +327,17 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Finish Position Trend</CardTitle>
-          <CardDescription>Your finishing positions over recent races (lower is better)</CardDescription>
+          <CardDescription>
+            Your finishing positions over recent races (lower is better)
+            {selectedCarId && carOptions.find(c => c.carId === selectedCarId) && (
+              <span className="ml-2 text-blue-600 dark:text-blue-400">
+                · {carOptions.find(c => c.carId === selectedCarId)?.carName}
+              </span>
+            )}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <FinishPositionChart races={races} />
+          <FinishPositionChart races={carFilteredRaces} />
         </CardContent>
       </Card>
 
@@ -175,13 +361,13 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
             Race Results
           </Button>
         </div>
-        {seasonTotal > 0 && (
+        {filteredSeasonStats.seasonTotal > 0 && (
           <div className="flex items-center gap-4 rounded-lg bg-green-50 dark:bg-green-950/30 px-4 py-2">
             <div className="text-sm text-zinc-600 dark:text-zinc-400">
-              Season Total ({weeksCounting}/8 weeks counting)
+              Season Total ({filteredSeasonStats.weeksCounting}/8 weeks counting)
             </div>
             <div className="text-xl font-bold text-green-700 dark:text-green-400">
-              {seasonTotal} pts
+              {filteredSeasonStats.seasonTotal} pts
             </div>
           </div>
         )}
@@ -196,19 +382,24 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
                 <CardTitle>Season Schedule</CardTitle>
                 <CardDescription>
                   12-week season grid with best results per week
+                  {selectedCarId && carOptions.find(c => c.carId === selectedCarId) && (
+                    <span className="ml-2 text-blue-600 dark:text-blue-400">
+                      · {carOptions.find(c => c.carId === selectedCarId)?.carName}
+                    </span>
+                  )}
                 </CardDescription>
               </div>
-              {weekResults.length > 0 && (
-                <SeasonProgressBadge weekResults={weekResults} />
+              {carFilteredWeekResults.length > 0 && (
+                <SeasonProgressBadge weekResults={carFilteredWeekResults} />
               )}
             </div>
           </CardHeader>
           <CardContent>
             {scheduleLoading ? (
               <Skeleton className="h-96 w-full" />
-            ) : weekResults.length > 0 ? (
+            ) : carFilteredWeekResults.length > 0 ? (
               <SeasonScheduleTable
-                weekResults={weekResults}
+                weekResults={carFilteredWeekResults}
                 onRaceClick={handleRaceClick}
               />
             ) : (
@@ -287,24 +478,49 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
   );
 }
 
+interface StatGroupProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function StatGroup({ title, children }: StatGroupProps) {
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+        {title}
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 interface StatBoxProps {
   label: string;
   value: string | number;
-  highlight?: 'green' | 'gold';
+  highlight?: 'green' | 'gold' | 'red' | 'bronze';
+  size?: 'default' | 'large';
 }
 
-function StatBox({ label, value, highlight }: StatBoxProps) {
+function StatBox({ label, value, highlight, size = 'default' }: StatBoxProps) {
   const highlightClass =
     highlight === 'green'
       ? 'text-green-600 dark:text-green-400'
       : highlight === 'gold'
-        ? 'text-yellow-600 dark:text-yellow-400'
-        : '';
+        ? 'text-yellow-500 dark:text-yellow-400'
+        : highlight === 'red'
+          ? 'text-red-500 dark:text-red-400'
+          : highlight === 'bronze'
+            ? 'text-amber-600 dark:text-amber-400'
+            : 'text-zinc-900 dark:text-zinc-100';
+
+  const valueClass = size === 'large' ? 'text-2xl' : 'text-lg';
 
   return (
     <div className="text-center">
-      <div className={`text-2xl font-bold ${highlightClass}`}>{value}</div>
-      <div className="text-xs text-zinc-500">{label}</div>
+      <div className={`font-bold ${valueClass} ${highlightClass}`}>{value}</div>
+      <div className="text-[10px] text-zinc-500 dark:text-zinc-400">{label}</div>
     </div>
   );
 }

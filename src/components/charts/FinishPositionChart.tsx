@@ -40,8 +40,8 @@ export function FinishPositionChart({ races }: FinishPositionChartProps) {
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         shortDate: date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
         track: race.trackName.split(' - ')[0], // Get just the track name, not config
-        finish: race.finishPosition,
-        start: race.startPosition,
+        finish: race.finishPositionInClass,
+        start: race.startPositionInClass,
         points: race.champPoints,
         sof: race.strengthOfField,
       };
