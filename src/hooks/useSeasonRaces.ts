@@ -70,42 +70,19 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
 }
 
 /**
- * Get the current iRacing season date range
- * iRacing seasons are ~12 weeks:
- * - Season 1: December to February
- * - Season 2: March to May
- * - Season 3: June to August
- * - Season 4: September to November
+ * Get the current season date range - simply look back 12 weeks from today.
+ * This reliably captures the full current season regardless of exact season boundaries.
  */
-function getCurrentSeasonDateRange(): { startDate: string; endDate: string } {
+function getSeasonDateRange(): { startDate: string; endDate: string } {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth(); // 0-indexed
+  const SEASON_LENGTH_DAYS = 84; // 12 weeks
 
-  let startDate: Date;
-  let endDate: Date = now;
-
-  // Determine season based on current month
-  if (month >= 11 || month <= 1) {
-    // Season 1: December - February
-    // If December, start is this year's December
-    // If Jan/Feb, start is previous year's December
-    const seasonYear = month === 11 ? year : year - 1;
-    startDate = new Date(seasonYear, 11, 1); // December 1
-  } else if (month >= 2 && month <= 4) {
-    // Season 2: March - May
-    startDate = new Date(year, 2, 1); // March 1
-  } else if (month >= 5 && month <= 7) {
-    // Season 3: June - August
-    startDate = new Date(year, 5, 1); // June 1
-  } else {
-    // Season 4: September - November
-    startDate = new Date(year, 8, 1); // September 1
-  }
+  const startDate = new Date(now);
+  startDate.setDate(startDate.getDate() - SEASON_LENGTH_DAYS);
 
   return {
     startDate: startDate.toISOString(),
-    endDate: endDate.toISOString(),
+    endDate: now.toISOString(),
   };
 }
 
@@ -116,7 +93,7 @@ async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
     return mockRecentRaces;
   }
 
-  const { startDate, endDate } = getCurrentSeasonDateRange();
+  const { startDate, endDate } = getSeasonDateRange();
 
   const response = await fetch(
     `/api/driver/${customerId}/season-races?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`

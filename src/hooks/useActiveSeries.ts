@@ -173,8 +173,11 @@ export function useActiveSeries(customerId: number | null) {
       });
     });
 
-    // Sort by total points descending
-    return summaries.sort((a, b) => b.totalPoints - a.totalPoints);
+    // Filter out series with no championship points (fun/special events)
+    // and sort by total points descending
+    return summaries
+      .filter((s) => s.totalPoints > 0)
+      .sort((a, b) => b.totalPoints - a.totalPoints);
   }, [races, customerId]);
 
   return {
