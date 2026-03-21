@@ -70,50 +70,24 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
 }
 
 /**
- * Fetch a window wide enough to always overlap with the previous season,
- * so we have raceWeekNum data from both seasons to detect the boundary.
- * 20 weeks covers a full 13-week season plus 7 weeks of buffer.
+ * Calculate the current iRacing season year and quarter from today's date.
+ *
+ * iRacing season approximate start dates:
+ *   S1: ~Jan 14  |  S2: ~Apr 8  |  S3: ~Jul 2  |  S4: ~Sep 23
  */
-function getSeasonDateRange(): { startDate: string; endDate: string } {
+function getCurrentIRacingSeason(): { seasonYear: number; seasonQuarter: number } {
   const now = new Date();
-  const startDate = new Date(now);
-  startDate.setDate(startDate.getDate() - 91); // 13 weeks — covers full season + 1 week overlap for boundary detection
-  return {
-    startDate: startDate.toISOString(),
-    endDate: now.toISOString(),
-  };
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+
+  if (month > 9 || (month === 9 && day >= 23)) return { seasonYear: year, seasonQuarter: 4 };
+  if (month > 7 || (month === 7 && day >= 2))  return { seasonYear: year, seasonQuarter: 3 };
+  if (month > 4 || (month === 4 && day >= 8))  return { seasonYear: year, seasonQuarter: 2 };
+  if (month > 1 || (month === 1 && day >= 14)) return { seasonYear: year, seasonQuarter: 1 };
+  return { seasonYear: year - 1, seasonQuarter: 4 };
 }
 
-/**
- * Filter races to only those in the current iRacing season using raceWeekNum.
- *
- * Races are sorted newest-first. Going backwards in time, week numbers should
- * decrease (or stay the same) within a season. When a race's week number jumps
- * significantly higher than the lowest week seen so far, that's the previous
- * season bleeding in — stop there.
- *
- * Threshold of 4: handles users who skip weeks within a season (e.g. week 8
- * followed by week 3 is fine) but catches season rollovers (e.g. week 1 current
- * season followed by week 11 of the previous season).
- */
-function filterToCurrentSeason(races: RecentRace[]): RecentRace[] {
-  if (races.length === 0) return races;
-
-  let minWeekSeen = races[0].raceWeekNum;
-
-  for (let i = 1; i < races.length; i++) {
-    const weekNum = races[i].raceWeekNum;
-    if (weekNum > minWeekSeen + 4) {
-      console.log(
-        `[useSeasonRaces] Season boundary detected at index ${i}: week ${weekNum} after min week ${minWeekSeen}`
-      );
-      return races.slice(0, i);
-    }
-    minWeekSeen = Math.min(minWeekSeen, weekNum);
-  }
-
-  return races;
-}
 
 async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
   if (USE_MOCK_DATA) {
@@ -122,12 +96,12 @@ async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
     return mockRecentRaces;
   }
 
-  const { startDate, endDate } = getSeasonDateRange();
+  const { seasonYear, seasonQuarter } = getCurrentIRacingSeason();
 
-  console.log('[useSeasonRaces] Fetching races', { startDate, endDate });
+  console.log(`[useSeasonRaces] Fetching season_year=${seasonYear} season_quarter=${seasonQuarter}`);
 
   const response = await fetch(
-    `/api/driver/${customerId}/season-races?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`
+    `/api/driver/${customerId}/season-races?season_year=${seasonYear}&season_quarter=${seasonQuarter}`
   );
 
   if (!response.ok) {
@@ -155,17 +129,9 @@ async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
   // Sort by session start time (newest first)
   races.sort((a, b) => new Date(b.sessionStartTime).getTime() - new Date(a.sessionStartTime).getTime());
 
-  // Log each race so we can see what week/date we're working with
-  console.log('[useSeasonRaces] All races (newest first):');
-  races.forEach((r, i) =>
-    console.log(`  [${i}] ${r.sessionStartTime.slice(0, 10)} week=${r.raceWeekNum} seasonId=${r.seasonId} series="${r.seriesName}"`)
-  );
+  console.log('[useSeasonRaces] Loaded', races.length, 'races');
 
-  // Filter to current season using week number to detect the season boundary
-  const currentSeasonRaces = filterToCurrentSeason(races);
-  console.log('[useSeasonRaces] After season filter:', currentSeasonRaces.length, 'of', races.length);
-
-  return currentSeasonRaces;
+  return races;
 }
 
 export function useSeasonRaces(customerId: number | null) {

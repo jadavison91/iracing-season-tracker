@@ -257,26 +257,26 @@ export async function getMemberChartData(
 }
 
 /**
- * Search for race results within a date range
- * This returns all races for a member in the specified time period
- * The search endpoint uses chunked responses that need separate fetching
+ * Search for race results for a specific iRacing season
+ * Uses season_year and season_quarter to query within the API's allowed bounds.
+ * The search endpoint uses chunked responses that need separate fetching.
  * @param custId - Customer ID of the driver
- * @param startDate - Start of date range (ISO string)
- * @param endDate - End of date range (ISO string)
+ * @param seasonYear - iRacing season year (e.g. 2026)
+ * @param seasonQuarter - iRacing season quarter 1-4 (e.g. 1)
  * @param officialOnly - Only return official races (default: true)
  */
 export async function searchMemberResults(
   custId: number,
-  startDate: string,
-  endDate: string,
+  seasonYear: number,
+  seasonQuarter: number,
   officialOnly: boolean = true
 ): Promise<{ results: Record<string, unknown>[] }> {
   await waitForRateLimit();
 
   const params: Record<string, string> = {
     cust_id: custId.toString(),
-    start_range_begin: startDate,
-    start_range_end: endDate,
+    season_year: seasonYear.toString(),
+    season_quarter: seasonQuarter.toString(),
     event_types: '5', // Races only
   };
 

@@ -16,19 +16,18 @@ export async function GET(
       );
     }
 
-    // Get query params for date range
     const searchParams = request.nextUrl.searchParams;
-    const startDate = searchParams.get('start_date');
-    const endDate = searchParams.get('end_date');
+    const seasonYear = parseInt(searchParams.get('season_year') ?? '', 10);
+    const seasonQuarter = parseInt(searchParams.get('season_quarter') ?? '', 10);
 
-    if (!startDate || !endDate) {
+    if (isNaN(seasonYear) || isNaN(seasonQuarter) || seasonQuarter < 1 || seasonQuarter > 4) {
       return NextResponse.json(
-        { error: 'start_date and end_date query parameters are required.' },
+        { error: 'season_year and season_quarter query parameters are required.' },
         { status: 400 }
       );
     }
 
-    const result = await searchMemberResults(custId, startDate, endDate);
+    const result = await searchMemberResults(custId, seasonYear, seasonQuarter);
 
     // Debug log
     console.log('[API /season-races] Returning', result.results?.length || 0, 'races');
