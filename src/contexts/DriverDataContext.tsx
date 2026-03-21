@@ -92,27 +92,6 @@ const initialState: DriverData = {
 
 const DriverDataContext = createContext<DriverDataContextType | null>(null);
 
-/**
- * Calculate the current iRacing season year and quarter from today's date.
- *
- * iRacing season approximate start dates:
- *   S1: ~Jan 14  |  S2: ~Apr 8  |  S3: ~Jul 2  |  S4: ~Sep 23
- *
- * Near transitions these dates may be off by a few days, but the API uses
- * season_year/season_quarter natively so it handles the exact boundaries.
- */
-function getCurrentIRacingSeason(): { seasonYear: number; seasonQuarter: number } {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
-
-  if (month > 9 || (month === 9 && day >= 23)) return { seasonYear: year, seasonQuarter: 4 };
-  if (month > 7 || (month === 7 && day >= 2))  return { seasonYear: year, seasonQuarter: 3 };
-  if (month > 4 || (month === 4 && day >= 8))  return { seasonYear: year, seasonQuarter: 2 };
-  if (month > 1 || (month === 1 && day >= 14)) return { seasonYear: year, seasonQuarter: 1 };
-  return { seasonYear: year - 1, seasonQuarter: 4 }; // Early Jan = S4 of previous year
-}
 
 
 /**
@@ -159,14 +138,8 @@ async function fetchAllDriverRaces(customerId: number): Promise<RecentRace[]> {
     return mockAllRaces;
   }
 
-  const { seasonYear, seasonQuarter } = getCurrentIRacingSeason();
-
-  console.log(`[DriverDataContext] Fetching season_year=${seasonYear} season_quarter=${seasonQuarter}`);
-
-  // Fetch season races (all races for the season)
-  const seasonResponse = await fetch(
-    `/api/driver/${customerId}/season-races?season_year=${seasonYear}&season_quarter=${seasonQuarter}`
-  );
+  // Fetch season races — server resolves the active season automatically
+  const seasonResponse = await fetch(`/api/driver/${customerId}/season-races`);
 
   if (!seasonResponse.ok) {
     throw new Error(`Failed to fetch season races: ${seasonResponse.status}`);

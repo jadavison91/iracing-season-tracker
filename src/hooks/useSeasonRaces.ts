@@ -69,24 +69,6 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
   };
 }
 
-/**
- * Calculate the current iRacing season year and quarter from today's date.
- *
- * iRacing season approximate start dates:
- *   S1: ~Jan 14  |  S2: ~Apr 8  |  S3: ~Jul 2  |  S4: ~Sep 23
- */
-function getCurrentIRacingSeason(): { seasonYear: number; seasonQuarter: number } {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
-
-  if (month > 9 || (month === 9 && day >= 23)) return { seasonYear: year, seasonQuarter: 4 };
-  if (month > 7 || (month === 7 && day >= 2))  return { seasonYear: year, seasonQuarter: 3 };
-  if (month > 4 || (month === 4 && day >= 8))  return { seasonYear: year, seasonQuarter: 2 };
-  if (month > 1 || (month === 1 && day >= 14)) return { seasonYear: year, seasonQuarter: 1 };
-  return { seasonYear: year - 1, seasonQuarter: 4 };
-}
 
 
 async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
@@ -96,13 +78,7 @@ async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
     return mockRecentRaces;
   }
 
-  const { seasonYear, seasonQuarter } = getCurrentIRacingSeason();
-
-  console.log(`[useSeasonRaces] Fetching season_year=${seasonYear} season_quarter=${seasonQuarter}`);
-
-  const response = await fetch(
-    `/api/driver/${customerId}/season-races?season_year=${seasonYear}&season_quarter=${seasonQuarter}`
-  );
+  const response = await fetch(`/api/driver/${customerId}/season-races`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch season races: ${response.status}`);

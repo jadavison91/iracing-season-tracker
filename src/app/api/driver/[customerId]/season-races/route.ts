@@ -1,5 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { searchMemberResults, IRacingApiError, IRacingAuthError } from '@/lib/iracing';
+import { searchMemberResults, getSeriesSeasons, IRacingApiError, IRacingAuthError } from '@/lib/iracing';
+
+// Cache active season for 1 hour — it only changes 4 times a year
+let cachedSeason: { seasonYear: number; seasonQuarter: number; expiresAt: number } | null = null;
+
+async function getActiveSeasonYearAndQuarter(): Promise<{ seasonYear: number; seasonQuarter: number }> {
+  if (cachedSeason && Date.now() < cachedSeason.expiresAt) {
+    return { seasonYear: cachedSeason.seasonYear, seasonQuarter: cachedSeason.seasonQuarter };
+  }
+
+  const seasons = await getSeriesSeasons();
+  const active = seasons.find((s) => s.active === true);
+  if (!active) throw new Error('No active iRacing season found');
+
+  const seasonYear = Number(active.season_year);
+  const seasonQuarter = Number(active.season_quarter);
+
+  cachedSeason = { seasonYear, seasonQuarter, expiresAt: Date.now() + 60 * 60 * 1000 };
+  console.log(`[season-races] Active season: ${seasonYear} S${seasonQuarter}`);
+
+  return { seasonYear, seasonQuarter };
+}
 
 export async function GET(
   request: NextRequest,
@@ -16,17 +37,7 @@ export async function GET(
       );
     }
 
-    const searchParams = request.nextUrl.searchParams;
-    const seasonYear = parseInt(searchParams.get('season_year') ?? '', 10);
-    const seasonQuarter = parseInt(searchParams.get('season_quarter') ?? '', 10);
-
-    if (isNaN(seasonYear) || isNaN(seasonQuarter) || seasonQuarter < 1 || seasonQuarter > 4) {
-      return NextResponse.json(
-        { error: 'season_year and season_quarter query parameters are required.' },
-        { status: 400 }
-      );
-    }
-
+    const { seasonYear, seasonQuarter } = await getActiveSeasonYearAndQuarter();
     const result = await searchMemberResults(custId, seasonYear, seasonQuarter);
 
     // Debug log
