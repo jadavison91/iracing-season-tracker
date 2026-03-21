@@ -99,7 +99,7 @@ const DriverDataContext = createContext<DriverDataContextType | null>(null);
 function getSeasonDateRange(): { startDate: string; endDate: string } {
   const now = new Date();
   const startDate = new Date(now);
-  startDate.setDate(startDate.getDate() - 140); // 20 weeks
+  startDate.setDate(startDate.getDate() - 91); // 13 weeks — covers full season + 1 week overlap for boundary detection
   return {
     startDate: startDate.toISOString(),
     endDate: now.toISOString(),
