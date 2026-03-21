@@ -151,7 +151,7 @@ async function fetchAllDriverRaces(customerId: number): Promise<RecentRace[]> {
   const rawRaces: Record<string, unknown>[] = seasonData.races || [];
   const races: RecentRace[] = rawRaces.map(transformRace);
 
-  console.log(`[DriverDataContext] Fetched ${races.length} races for ${seasonYear} S${seasonQuarter}`);
+  console.log(`[DriverDataContext] Fetched ${races.length} races`);
 
   // Check if races have iRating data
   const racesWithoutIRating = races.filter(r => !r.newIRating || r.newIRating === 0);
