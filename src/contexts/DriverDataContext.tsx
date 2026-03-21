@@ -93,20 +93,41 @@ const initialState: DriverData = {
 const DriverDataContext = createContext<DriverDataContextType | null>(null);
 
 /**
- * Get the current season date range - simply look back 12 weeks from today.
- * This reliably captures the full current season regardless of exact season boundaries.
+ * Fetch a 20-week window — wide enough to always overlap with the previous season
+ * so we have raceWeekNum data from both seasons to detect the boundary.
  */
 function getSeasonDateRange(): { startDate: string; endDate: string } {
   const now = new Date();
-  const SEASON_LENGTH_DAYS = 84; // 12 weeks
-
   const startDate = new Date(now);
-  startDate.setDate(startDate.getDate() - SEASON_LENGTH_DAYS);
-
+  startDate.setDate(startDate.getDate() - 140); // 20 weeks
   return {
     startDate: startDate.toISOString(),
     endDate: now.toISOString(),
   };
+}
+
+/**
+ * Filter races to only those in the current iRacing season using raceWeekNum.
+ *
+ * Races must be sorted newest-first. Going backwards in time, week numbers should
+ * decrease within a season. When a week number jumps more than 4 higher than the
+ * lowest week seen so far, that indicates the previous season — stop there.
+ */
+function filterToCurrentSeason(races: RecentRace[]): RecentRace[] {
+  if (races.length === 0) return races;
+
+  let minWeekSeen = races[0].raceWeekNum;
+
+  for (let i = 1; i < races.length; i++) {
+    const weekNum = races[i].raceWeekNum;
+    if (weekNum > minWeekSeen + 4) {
+      console.log(`[DriverDataContext] Season boundary at index ${i}: week ${weekNum} > min ${minWeekSeen} + 4`);
+      return races.slice(0, i);
+    }
+    minWeekSeen = Math.min(minWeekSeen, weekNum);
+  }
+
+  return races;
 }
 
 /**
@@ -170,7 +191,7 @@ async function fetchAllDriverRaces(customerId: number): Promise<RecentRace[]> {
   const rawRaces: Record<string, unknown>[] = seasonData.races || [];
   const races: RecentRace[] = rawRaces.map(transformRace);
 
-  console.log(`[DriverDataContext] Fetched ${races.length} season races`);
+  console.log(`[DriverDataContext] Fetched ${races.length} races for date range ${startDate} → ${endDate}`);
 
   // Check if races have iRating data
   const racesWithoutIRating = races.filter(r => !r.newIRating || r.newIRating === 0);
@@ -211,14 +232,28 @@ async function fetchAllDriverRaces(customerId: number): Promise<RecentRace[]> {
     }
   }
 
-  // Sort by session start time (oldest first for charting)
+  // Sort newest-first for season boundary detection
   races.sort((a, b) =>
+    new Date(b.sessionStartTime).getTime() - new Date(a.sessionStartTime).getTime()
+  );
+
+  console.log('[DriverDataContext] All races (newest first):');
+  races.forEach((r, i) =>
+    console.log(`  [${i}] ${r.sessionStartTime.slice(0, 10)} week=${r.raceWeekNum} seasonId=${r.seasonId} series="${r.seriesName}"`)
+  );
+
+  // Filter to current season using week number boundary detection
+  const currentSeasonRaces = filterToCurrentSeason(races);
+  console.log(`[DriverDataContext] After season filter: ${currentSeasonRaces.length} of ${races.length} races`);
+
+  // Re-sort oldest-first for charting
+  currentSeasonRaces.sort((a, b) =>
     new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime()
   );
 
-  console.log(`[DriverDataContext] Final race count: ${races.length}, with iRating: ${races.filter(r => r.newIRating > 0).length}`);
+  console.log(`[DriverDataContext] Final: ${currentSeasonRaces.length} races, ${currentSeasonRaces.filter(r => r.newIRating > 0).length} with iRating`);
 
-  return races;
+  return currentSeasonRaces;
 }
 
 export function DriverDataProvider({ children }: { children: React.ReactNode }) {

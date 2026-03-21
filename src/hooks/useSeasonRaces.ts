@@ -70,20 +70,49 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
 }
 
 /**
- * Get the current season date range - simply look back 12 weeks from today.
- * This reliably captures the full current season regardless of exact season boundaries.
+ * Fetch a window wide enough to always overlap with the previous season,
+ * so we have raceWeekNum data from both seasons to detect the boundary.
+ * 20 weeks covers a full 13-week season plus 7 weeks of buffer.
  */
 function getSeasonDateRange(): { startDate: string; endDate: string } {
   const now = new Date();
-  const SEASON_LENGTH_DAYS = 84; // 12 weeks
-
   const startDate = new Date(now);
-  startDate.setDate(startDate.getDate() - SEASON_LENGTH_DAYS);
-
+  startDate.setDate(startDate.getDate() - 140); // 20 weeks
   return {
     startDate: startDate.toISOString(),
     endDate: now.toISOString(),
   };
+}
+
+/**
+ * Filter races to only those in the current iRacing season using raceWeekNum.
+ *
+ * Races are sorted newest-first. Going backwards in time, week numbers should
+ * decrease (or stay the same) within a season. When a race's week number jumps
+ * significantly higher than the lowest week seen so far, that's the previous
+ * season bleeding in — stop there.
+ *
+ * Threshold of 4: handles users who skip weeks within a season (e.g. week 8
+ * followed by week 3 is fine) but catches season rollovers (e.g. week 1 current
+ * season followed by week 11 of the previous season).
+ */
+function filterToCurrentSeason(races: RecentRace[]): RecentRace[] {
+  if (races.length === 0) return races;
+
+  let minWeekSeen = races[0].raceWeekNum;
+
+  for (let i = 1; i < races.length; i++) {
+    const weekNum = races[i].raceWeekNum;
+    if (weekNum > minWeekSeen + 4) {
+      console.log(
+        `[useSeasonRaces] Season boundary detected at index ${i}: week ${weekNum} after min week ${minWeekSeen}`
+      );
+      return races.slice(0, i);
+    }
+    minWeekSeen = Math.min(minWeekSeen, weekNum);
+  }
+
+  return races;
 }
 
 async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
@@ -94,6 +123,8 @@ async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
   }
 
   const { startDate, endDate } = getSeasonDateRange();
+
+  console.log('[useSeasonRaces] Fetching races', { startDate, endDate });
 
   const response = await fetch(
     `/api/driver/${customerId}/season-races?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`
@@ -116,25 +147,7 @@ async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
     racesArray = data;
   }
 
-  // Log for debugging
-  console.log('[useSeasonRaces] Loaded', racesArray.length, 'races');
-
-  // Log all available fields from first race to help identify missing data
-  if (racesArray.length > 0) {
-    const firstRace = racesArray[0] as Record<string, unknown>;
-    console.log('[useSeasonRaces] Available fields:', Object.keys(firstRace).sort().join(', '));
-    // Log fields that might contain lap/rating data
-    const relevantFields = ['average_lap', 'best_lap_time', 'best_lap_num', 'best_qual_lap_time',
-      'newi_rating', 'oldi_rating', 'new_irating', 'old_irating', 'new_sub_level', 'old_sub_level',
-      'event_average_lap', 'event_best_lap_time'];
-    const foundFields: Record<string, unknown> = {};
-    for (const field of relevantFields) {
-      if (firstRace[field] !== undefined) {
-        foundFields[field] = firstRace[field];
-      }
-    }
-    console.log('[useSeasonRaces] Lap/rating fields found:', foundFields);
-  }
+  console.log('[useSeasonRaces] Raw races from API:', racesArray.length);
 
   // Transform the races from snake_case to camelCase
   const races = racesArray.map((raw: Record<string, unknown>) => transformRace(raw));
@@ -142,7 +155,17 @@ async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
   // Sort by session start time (newest first)
   races.sort((a, b) => new Date(b.sessionStartTime).getTime() - new Date(a.sessionStartTime).getTime());
 
-  return races;
+  // Log each race so we can see what week/date we're working with
+  console.log('[useSeasonRaces] All races (newest first):');
+  races.forEach((r, i) =>
+    console.log(`  [${i}] ${r.sessionStartTime.slice(0, 10)} week=${r.raceWeekNum} seasonId=${r.seasonId} series="${r.seriesName}"`)
+  );
+
+  // Filter to current season using week number to detect the season boundary
+  const currentSeasonRaces = filterToCurrentSeason(races);
+  console.log('[useSeasonRaces] After season filter:', currentSeasonRaces.length, 'of', races.length);
+
+  return currentSeasonRaces;
 }
 
 export function useSeasonRaces(customerId: number | null) {

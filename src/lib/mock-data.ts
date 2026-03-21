@@ -1574,7 +1574,7 @@ export const mockAllRaces: RecentRace[] = [...mockRecentRaces].sort(
 // ============================================================================
 
 // Set to true to use mock data, false to use real API
-export const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'false';
+export const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 // ============================================================================
 // Helper Functions
