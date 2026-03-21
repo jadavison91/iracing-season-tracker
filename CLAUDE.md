@@ -28,8 +28,10 @@ IRACING_PASSWORD=your-iracing-password
 Optional:
 ```
 IRACING_API_BASE_URL=https://members-ng.iracing.com/data  # default
-USE_MOCK_DATA=true  # use mock data for development without credentials
+NEXT_PUBLIC_USE_MOCK_DATA=true  # opt-in mock data for development without credentials
 ```
+
+**Mock data is OFF by default.** It must be explicitly enabled via `NEXT_PUBLIC_USE_MOCK_DATA=true`. If you see driver stats but no API calls in the Network tab, check this first.
 
 ## Architecture
 
@@ -56,10 +58,18 @@ USE_MOCK_DATA=true  # use mock data for development without credentials
 - `seasonId` is present on every race result but is **series-specific** — different series have different season IDs even within the same global iRacing season
 
 ### iRacing Season Structure
-- All series follow the same fixed season calendar: **12 racing weeks + 1 "week 13"** fun week = **91 days** per season
-- `useSeasonRaces` fetches a 20-week window then uses `raceWeekNum` from the data to detect the season boundary: sorted newest-first, when a race's week number jumps more than 4 higher than the lowest week seen so far, that's the previous season — stop there
+- All series follow the same fixed season calendar: **12 racing weeks + 1 "week 13"** fun week
+- iRacing season numbering does **not** align with calendar quarters — do not try to derive `season_year`/`season_quarter` from the current date
+- The `/api/driver/[customerId]/season-races` route automatically resolves the current season by calling `getSeriesSeasons()` and finding the first `active: true` record — no date math needed
+- Active season result is cached in-memory for 1 hour in the route handler
 - Do **not** filter by `seasonId` across series — each series has its own season ID, so this would drop races from all but one series
-- Do **not** use hardcoded anchor dates to calculate season start — use the week number boundary detection instead
+- Do **not** use date ranges with `results/search_series` — the iRacing API rejects dates outside the current season window
+
+### Season Races API Flow
+1. Client calls `/api/driver/[customerId]/season-races` (no params needed)
+2. Server calls `getSeriesSeasons()`, finds `active: true` season, reads `season_year` + `season_quarter`
+3. Server calls `searchMemberResults(custId, seasonYear, seasonQuarter)`
+4. Results returned as `{ races: [...] }`
 
 ### Path Alias
 `@/` maps to `src/` — always use this for imports.
@@ -80,7 +90,7 @@ src/
 │   │   ├── driver/[customerId]/
 │   │   │   ├── irating-history/
 │   │   │   ├── recent-races/
-│   │   │   ├── season-races/
+│   │   │   ├── season-races/   # Resolves active season automatically
 │   │   │   └── summary/
 │   │   ├── series/[seriesId]/schedule/
 │   │   ├── subsession/[subsessionId]/
@@ -98,7 +108,7 @@ src/
 ├── hooks/                      # React Query data hooks
 ├── lib/
 │   ├── iracing/                # API client, auth, types
-│   ├── mock-data.ts            # Dev mock data (toggle via USE_MOCK_DATA)
+│   ├── mock-data.ts            # Dev mock data (opt-in via NEXT_PUBLIC_USE_MOCK_DATA=true)
 │   ├── providers.tsx           # React Query + Theme + Context providers
 │   └── utils.ts
 └── __tests__/                  # Jest + Testing Library tests
@@ -108,5 +118,8 @@ src/
 
 - Two-step fetch pattern: endpoint returns a signed S3 URL, then fetch data from that URL
 - `results/search_series` returns chunked results — all chunks must be fetched and concatenated
+- `results/search_series` uses `season_year` + `season_quarter` params (not date ranges)
+- `results/search_series` rejects `start_range_begin` dates outside the current season window
+- `/series/seasons` returns all series seasons; filter client-side for `active: true`
 - Rate limit: 1 request/second (enforced in `client.ts`)
 - Auth errors (401) are handled separately from API errors and trigger token refresh
