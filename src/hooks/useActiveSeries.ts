@@ -132,7 +132,14 @@ export function useActiveSeries(customerId: number | null) {
         });
 
         const finishPositions = classRaces.map((r) => r.finishPositionInClass);
-        const totalPoints = classRaces.reduce((sum, r) => sum + r.champPoints, 0);
+
+        // Only count the best result per race week (iRacing championship scoring)
+        const bestPointsByWeek = new Map<number, number>();
+        classRaces.forEach((r) => {
+          const current = bestPointsByWeek.get(r.raceWeekNum) ?? 0;
+          if (r.champPoints > current) bestPointsByWeek.set(r.raceWeekNum, r.champPoints);
+        });
+        const totalPoints = Array.from(bestPointsByWeek.values()).reduce((sum, pts) => sum + pts, 0);
         const className = classRaces[0]?.carClassName || classRaces[0]?.carClassShortName || '';
 
         classStats.push({
