@@ -81,7 +81,12 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
 
     return {
       totalRaces: races.length,
-      totalPoints: races.reduce((sum, r) => sum + r.champPoints, 0),
+      totalPoints: Array.from(
+        races.reduce((map, r) => {
+          if (r.champPoints > (map.get(r.raceWeekNum) ?? 0)) map.set(r.raceWeekNum, r.champPoints);
+          return map;
+        }, new Map<number, number>()).values()
+      ).reduce((sum, pts) => sum + pts, 0),
       avgFinish: Math.round((finishPositions.reduce((a, b) => a + b, 0) / races.length) * 10) / 10,
       avgStart: Math.round((startPositions.reduce((a, b) => a + b, 0) / races.length) * 10) / 10,
       bestFinish: Math.min(...finishPositions),
