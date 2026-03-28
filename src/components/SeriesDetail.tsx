@@ -154,7 +154,7 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
   // Recalculate season totals for filtered results
   const filteredSeasonStats = useMemo(() => {
     const completedWeeks = carFilteredWeekResults.filter(
-      (w) => w.status === 'completed' && w.bestResult
+      (w) => (w.status === 'completed' || w.status === 'active') && w.bestResult
     );
 
     // Get points from best results, sort descending, take top 8
