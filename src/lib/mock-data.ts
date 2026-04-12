@@ -136,7 +136,12 @@ export const mockSeries: Series[] = [
 
 // Helper to estimate iRating change based on finish position and SoF
 // This is an approximation - real iRating calculation is more complex
-function estimateIRatingChange(finishPosition: number, numDrivers: number, sof: number, yourIRating: number): number {
+function estimateIRatingChange(
+  finishPosition: number,
+  numDrivers: number,
+  sof: number,
+  yourIRating: number
+): number {
   const expectedFinish = (numDrivers + 1) / 2; // Middle of the pack
   const positionDelta = expectedFinish - finishPosition; // Positive if finished better than expected
 
@@ -176,10 +181,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 6,
     finishPositionInClass: 6,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 61,
     clubPoints: 8,
     incidents: 4,
@@ -215,10 +220,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 34,
     finishPositionInClass: 34,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 18,
     clubPoints: 2,
     incidents: 15,
@@ -254,10 +259,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 1,
     finishPositionInClass: 1,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 94,
     clubPoints: 12,
     incidents: 0,
@@ -293,10 +298,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 6,
     finishPositionInClass: 6,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 14,
     clubPoints: 5,
     incidents: 4,
@@ -332,10 +337,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 3,
     finishPositionInClass: 3,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 50,
     clubPoints: 8,
     incidents: 2,
@@ -371,10 +376,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 2,
     finishPositionInClass: 2,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 66,
     clubPoints: 10,
     incidents: 2,
@@ -410,10 +415,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 5,
     finishPositionInClass: 5,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 28,
     clubPoints: 6,
     incidents: 2,
@@ -449,10 +454,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 7,
     finishPositionInClass: 7,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 9,
     clubPoints: 4,
     incidents: 0,
@@ -488,10 +493,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 1,
     finishPositionInClass: 1,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 81,
     clubPoints: 12,
     incidents: 0,
@@ -527,10 +532,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 2,
     finishPositionInClass: 2,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 53,
     clubPoints: 10,
     incidents: 2,
@@ -566,10 +571,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 32,
     finishPositionInClass: 32,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 46,
     clubPoints: 3,
     incidents: 5,
@@ -605,10 +610,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 20,
     finishPositionInClass: 20,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 105,
     clubPoints: 7,
     incidents: 4,
@@ -644,10 +649,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 7,
     finishPositionInClass: 7,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 34,
     clubPoints: 5,
     incidents: 0,
@@ -683,10 +688,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 1,
     finishPositionInClass: 1,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 107,
     clubPoints: 12,
     incidents: 2,
@@ -722,10 +727,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 4,
     finishPositionInClass: 4,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 80,
     clubPoints: 9,
     incidents: 0,
@@ -761,10 +766,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 6,
     finishPositionInClass: 6,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 18,
     clubPoints: 5,
     incidents: 0,
@@ -800,10 +805,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 2,
     finishPositionInClass: 2,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 77,
     clubPoints: 10,
     incidents: 0,
@@ -839,10 +844,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 26,
     finishPositionInClass: 26,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 7,
     clubPoints: 4,
     incidents: 4,
@@ -878,10 +883,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 6,
     finishPositionInClass: 6,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 82,
     clubPoints: 8,
     incidents: 2,
@@ -917,10 +922,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 22,
     finishPositionInClass: 22,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 98,
     clubPoints: 7,
     incidents: 3,
@@ -956,10 +961,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 4,
     finishPositionInClass: 4,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 45,
     clubPoints: 7,
     incidents: 2,
@@ -995,10 +1000,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 2,
     finishPositionInClass: 2,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 76,
     clubPoints: 10,
     incidents: 0,
@@ -1034,10 +1039,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 30,
     finishPositionInClass: 30,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 52,
     clubPoints: 4,
     incidents: 2,
@@ -1073,10 +1078,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 7,
     finishPositionInClass: 7,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 8,
     clubPoints: 4,
     incidents: 2,
@@ -1112,10 +1117,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 2,
     finishPositionInClass: 2,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 61,
     clubPoints: 10,
     incidents: 0,
@@ -1151,10 +1156,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 27,
     finishPositionInClass: 27,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 92,
     clubPoints: 6,
     incidents: 9,
@@ -1190,10 +1195,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 15,
     finishPositionInClass: 15,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 30,
     clubPoints: 4,
     incidents: 8,
@@ -1229,10 +1234,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 3,
     finishPositionInClass: 3,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 93,
     clubPoints: 9,
     incidents: 6,
@@ -1268,10 +1273,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 16,
     finishPositionInClass: 16,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 113,
     clubPoints: 8,
     incidents: 2,
@@ -1307,10 +1312,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 1,
     finishPositionInClass: 1,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 94,
     clubPoints: 12,
     incidents: 0,
@@ -1346,10 +1351,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 3,
     finishPositionInClass: 3,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 68,
     clubPoints: 9,
     incidents: 2,
@@ -1385,10 +1390,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 3,
     finishPositionInClass: 3,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 66,
     clubPoints: 8,
     incidents: 4,
@@ -1424,10 +1429,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 33,
     finishPositionInClass: 33,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 74,
     clubPoints: 5,
     incidents: 0,
@@ -1463,10 +1468,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 1,
     finishPositionInClass: 1,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 78,
     clubPoints: 12,
     incidents: 0,
@@ -1502,10 +1507,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 15,
     finishPositionInClass: 15,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 23,
     clubPoints: 4,
     incidents: 1,
@@ -1541,10 +1546,10 @@ export const mockRecentRaces: RecentRace[] = [
     startPositionInClass: 2,
     finishPositionInClass: 2,
     carClassId: 0,
-    carClassName: "",
-    carClassShortName: "",
+    carClassName: '',
+    carClassShortName: '',
     carId: 0,
-    carName: "",
+    carName: '',
     champPoints: 85,
     clubPoints: 10,
     incidents: 2,
@@ -1594,7 +1599,8 @@ export function getSeriesSummaryFromRaces(races: RecentRace[], seriesId: number)
     seriesId,
     seriesName: seriesRaces[0].seriesName,
     racesEntered: seriesRaces.length,
-    avgFinish: Math.round((finishPositions.reduce((a, b) => a + b, 0) / finishPositions.length) * 10) / 10,
+    avgFinish:
+      Math.round((finishPositions.reduce((a, b) => a + b, 0) / finishPositions.length) * 10) / 10,
     totalPoints,
     bestFinish: Math.min(...finishPositions),
     worstFinish: Math.max(...finishPositions),
@@ -1616,7 +1622,9 @@ export function getActiveSeriesFromRaces(races: RecentRace[]): Series[] {
 export function calculateVirtualIRating(races: RecentRace[], seriesId: number) {
   const seriesRaces = races
     .filter((r) => r.seriesId === seriesId)
-    .sort((a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime());
+    .sort(
+      (a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime()
+    );
 
   if (seriesRaces.length === 0) return [];
 
@@ -1639,7 +1647,7 @@ export function calculateVirtualIRating(races: RecentRace[], seriesId: number) {
   });
 
   // Aggregate by week - take the final iRating for each week
-  const weekMap = new Map<number, typeof raceData[0]>();
+  const weekMap = new Map<number, (typeof raceData)[0]>();
   let weekDelta = 0;
   let prevWeekIRating = baseline;
 
@@ -1711,7 +1719,8 @@ export function getSeriesAchievements(races: RecentRace[]): SeriesAchievements[]
     const top5s = seriesRaces.filter((r) => r.finishPositionInClass <= 5).length;
     const cleanRaces = seriesRaces.filter((r) => r.incidents === 0).length;
     const totalIncidents = seriesRaces.reduce((sum, r) => sum + r.incidents, 0);
-    const avgFinish = seriesRaces.reduce((sum, r) => sum + r.finishPositionInClass, 0) / seriesRaces.length;
+    const avgFinish =
+      seriesRaces.reduce((sum, r) => sum + r.finishPositionInClass, 0) / seriesRaces.length;
 
     return {
       seriesId,
@@ -1766,9 +1775,14 @@ export function getSoFDistribution(races: RecentRace[]) {
     return {
       bracket: bracket.label,
       count: racesInBracket.length,
-      avgFinish: racesInBracket.length > 0
-        ? Math.round((racesInBracket.reduce((sum, r) => sum + r.finishPosition, 0) / racesInBracket.length) * 10) / 10
-        : 0,
+      avgFinish:
+        racesInBracket.length > 0
+          ? Math.round(
+              (racesInBracket.reduce((sum, r) => sum + r.finishPosition, 0) /
+                racesInBracket.length) *
+                10
+            ) / 10
+          : 0,
     };
   });
 }
@@ -1777,8 +1791,9 @@ export function getSoFDistribution(races: RecentRace[]) {
  * Get average finish position trend over time
  */
 export function getFinishPositionTrend(races: RecentRace[]) {
-  const sorted = races
-    .sort((a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime());
+  const sorted = races.sort(
+    (a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime()
+  );
 
   // Calculate rolling average (last 5 races) using in-class position for multi-class races
   return sorted.map((race, index) => {
@@ -1852,7 +1867,8 @@ export function getChampionshipPointsBySeries(races: RecentRace[]): SeriesChampi
   return Array.from(seriesClassMap.entries())
     .map(([key, seriesRaces]) => {
       const seriesId = seriesRaces[0].seriesId;
-      const carClassName = seriesRaces[0].carClassName || seriesRaces[0].carClassShortName || seriesRaces[0].carName;
+      const carClassName =
+        seriesRaces[0].carClassName || seriesRaces[0].carClassShortName || seriesRaces[0].carName;
       const baseSeriesName = seriesRaces[0].seriesName;
       const hasMultipleClasses = (seriesClassCount.get(seriesId)?.size || 0) > 1;
 
@@ -1895,6 +1911,338 @@ export function getChampionshipPointsBySeries(races: RecentRace[]): SeriesChampi
       };
     })
     .sort((a, b) => b.countingPoints - a.countingPoints); // Sort by counting points descending
+}
+
+// ============================================================================
+// Track Performance
+// ============================================================================
+
+/**
+ * Derive a discipline string from a race, mirroring DriverDataContext.getDiscipline.
+ * Handles trackCategoryId === 0 (missing) via series-name fallback.
+ */
+function deriveDiscipline(race: RecentRace): string {
+  const catId = race.trackCategoryId;
+  const name = (race.seriesName ?? '').toLowerCase();
+  if (catId === 1) return 'oval';
+  if (catId === 3) return 'dirt_oval';
+  if (catId === 4) return 'dirt_road';
+  if (catId === 2) {
+    if (
+      name.includes('formula') ||
+      name.includes(' f1') ||
+      name.includes(' f2') ||
+      name.includes(' f3') ||
+      name.includes('ir-04') ||
+      name.includes('usf') ||
+      name.includes('indy')
+    )
+      return 'formula';
+    return 'sports_car';
+  }
+  // catId === 0 or anything else — fall back to series name keywords
+  if (
+    name.includes('dirt oval') ||
+    name.includes('sprint car') ||
+    name.includes('world of outlaws')
+  )
+    return 'dirt_oval';
+  if (
+    name.includes('dirt') ||
+    name.includes('rallycross') ||
+    name.includes('off-road') ||
+    name.includes('trophy truck')
+  )
+    return 'dirt_road';
+  if (name.includes('oval') || name.includes('nascar') || name.includes('arca')) return 'oval';
+  if (
+    name.includes('formula') ||
+    name.includes(' f1') ||
+    name.includes('ir-04') ||
+    name.includes('indy')
+  )
+    return 'formula';
+  return 'sports_car';
+}
+
+export interface TrackPerformanceRow {
+  trackName: string;
+  carName: string;
+  races: number;
+  wins: number;
+  podiums: number;
+  bestFinish: number;
+  avgFinish: number;
+  avgIncidents: number;
+}
+
+export function getTrackPerformance(races: RecentRace[]): TrackPerformanceRow[] {
+  const map = new Map<string, RecentRace[]>();
+  races.forEach((r) => {
+    const key = `${r.trackName || 'Unknown'}||${r.carName || 'Unknown'}`;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(r);
+  });
+
+  return Array.from(map.entries())
+    .map(([, trackRaces]) => {
+      const finishes = trackRaces.map((r) => r.finishPositionInClass);
+      const bestFinish = Math.min(...finishes);
+      const avgFinish = finishes.reduce((s, v) => s + v, 0) / finishes.length;
+      const avgIncidents = trackRaces.reduce((s, r) => s + r.incidents, 0) / trackRaces.length;
+      return {
+        trackName: trackRaces[0].trackName || 'Unknown',
+        carName: trackRaces[0].carName || 'Unknown',
+        races: trackRaces.length,
+        wins: trackRaces.filter((r) => r.finishPositionInClass === 1).length,
+        podiums: trackRaces.filter((r) => r.finishPositionInClass <= 3).length,
+        bestFinish,
+        avgFinish: Math.round(avgFinish * 10) / 10,
+        avgIncidents: Math.round(avgIncidents * 10) / 10,
+      };
+    })
+    .sort((a, b) => b.races - a.races);
+}
+
+// ============================================================================
+// Positions Gained
+// ============================================================================
+
+export interface PositionsGainedPoint {
+  date: string;
+  trackName: string;
+  seriesName: string;
+  startPos: number;
+  finishPos: number;
+  gained: number; // positive = moved forward
+}
+
+export function getPositionsGained(races: RecentRace[]): PositionsGainedPoint[] {
+  return races
+    .filter((r) => r.startPositionInClass > 0 && r.finishPositionInClass > 0)
+    .sort((a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime())
+    .map((r) => ({
+      date: r.sessionStartTime,
+      trackName: r.trackName || 'Unknown',
+      seriesName: (r.seriesName || 'Unknown').split(' ').slice(0, 3).join(' '),
+      startPos: r.startPositionInClass,
+      finishPos: r.finishPositionInClass,
+      gained: r.startPositionInClass - r.finishPositionInClass,
+    }));
+}
+
+// ============================================================================
+// Best Laps
+// ============================================================================
+
+export interface BestLapRow {
+  trackName: string;
+  carName: string;
+  bestLapTime: number; // hundredths of seconds
+  seriesName: string;
+  date: string;
+  attempts: number; // races at this track+car with valid lap times
+}
+
+export function getBestLaps(races: RecentRace[]): BestLapRow[] {
+  const map = new Map<string, RecentRace[]>();
+  races
+    .filter((r) => r.bestLapTime > 0)
+    .forEach((r) => {
+      const key = `${r.trackName || 'Unknown'}||${r.carName || 'Unknown'}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(r);
+    });
+
+  return Array.from(map.entries())
+    .map(([, trackRaces]) => {
+      const best = trackRaces.reduce((b, r) => (r.bestLapTime < b.bestLapTime ? r : b));
+      return {
+        trackName: best.trackName || 'Unknown',
+        carName: best.carName || 'Unknown',
+        bestLapTime: best.bestLapTime,
+        seriesName: (best.seriesName || '').split(' ').slice(0, 3).join(' '),
+        date: best.sessionStartTime,
+        attempts: trackRaces.length,
+      };
+    })
+    .sort((a, b) => a.bestLapTime - b.bestLapTime);
+}
+
+// ============================================================================
+// Learning Curve — per-track lap time improvement across visits
+// ============================================================================
+
+export interface LearningCurveVisit {
+  visitNum: number; // 1-indexed
+  date: string; // ISO
+  bestLapTime: number; // hundredths of seconds
+  delta: number; // vs first visit: negative = faster (improvement)
+  lapsComplete: number;
+}
+
+export interface LearningCurveRow {
+  trackName: string; // includes config name (e.g. "Spa - Grand Prix Circuit")
+  carName: string;
+  carClassName: string;
+  discipline: string;
+  visits: LearningCurveVisit[];
+  firstLap: number; // hundredths of seconds
+  bestLap: number;
+  improvement: number; // firstLap - bestLap (positive = got faster)
+  improvementPct: number; // (improvement / firstLap) * 100
+}
+
+export function getLearningCurve(races: RecentRace[]): LearningCurveRow[] {
+  // Group by track config + car class — different cars or configs aren't comparable
+  const byKey = new Map<string, RecentRace[]>();
+  races
+    .filter((r) => r.bestLapTime > 0)
+    .forEach((r) => {
+      const key = `${r.trackId}-${r.carClassId}`;
+      if (!byKey.has(key)) byKey.set(key, []);
+      byKey.get(key)!.push(r);
+    });
+
+  const rows: LearningCurveRow[] = [];
+
+  for (const [, groupRaces] of byKey) {
+    if (groupRaces.length < 2) continue;
+
+    const sorted = [...groupRaces].sort(
+      (a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime()
+    );
+
+    const firstLap = sorted[0].bestLapTime;
+    const bestLap = sorted.reduce((b, r) => Math.min(b, r.bestLapTime), firstLap);
+
+    const visits: LearningCurveVisit[] = sorted.map((r, i) => ({
+      visitNum: i + 1,
+      date: r.sessionStartTime,
+      bestLapTime: r.bestLapTime,
+      delta: r.bestLapTime - firstLap,
+      lapsComplete: r.lapsComplete,
+    }));
+
+    const improvement = firstLap - bestLap;
+    const improvementPct = Math.round((improvement / firstLap) * 1000) / 10;
+
+    rows.push({
+      trackName: sorted[0].trackName,
+      carName: sorted[0].carName || 'Unknown',
+      carClassName: sorted[0].carClassShortName || sorted[0].carClassName,
+      discipline: deriveDiscipline(sorted[0]),
+      visits,
+      firstLap,
+      bestLap,
+      improvement,
+      improvementPct,
+    });
+  }
+
+  // Most improved first
+  return rows.sort((a, b) => b.improvementPct - a.improvementPct);
+}
+
+// ============================================================================
+// Zeitanalyse — performance by time of day and day of week
+// ============================================================================
+
+export interface ZeitanalysePoint {
+  label: string;
+  races: number;
+  avgFinish: number;
+  avgIncidents: number;
+  winRate: number; // 0–100
+  avgIRDelta: number; // average (newIRating - oldIRating), races with iRating only
+}
+
+export interface ZeitanalyseData {
+  byDayOfWeek: ZeitanalysePoint[];
+  byHourOfDay: ZeitanalysePoint[];
+}
+
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// Hours grouped into 2-hour blocks, displayed in 12-hour format
+const HOUR_BLOCK_LABELS = [
+  '12–2am',
+  '2–4am',
+  '4–6am',
+  '6–8am',
+  '8–10am',
+  '10am–12pm',
+  '12–2pm',
+  '2–4pm',
+  '4–6pm',
+  '6–8pm',
+  '8–10pm',
+  '10pm–12am',
+];
+
+function buildZeitanalysePoints(groups: RecentRace[][]): ZeitanalysePoint[] {
+  return groups.map((bucket) => {
+    if (bucket.length === 0) {
+      return {
+        label: '',
+        races: 0,
+        avgFinish: 0,
+        avgIncidents: 0,
+        winRate: 0,
+        avgIRDelta: 0,
+      };
+    }
+    const racesWithIR = bucket.filter((r) => r.newIRating > 0 && r.oldIRating > 0);
+    return {
+      label: '',
+      races: bucket.length,
+      avgFinish:
+        Math.round((bucket.reduce((s, r) => s + r.finishPositionInClass, 0) / bucket.length) * 10) /
+        10,
+      avgIncidents:
+        Math.round((bucket.reduce((s, r) => s + r.incidents, 0) / bucket.length) * 10) / 10,
+      winRate:
+        Math.round(
+          (bucket.filter((r) => r.finishPositionInClass === 1).length / bucket.length) * 1000
+        ) / 10,
+      avgIRDelta:
+        racesWithIR.length > 0
+          ? Math.round(
+              racesWithIR.reduce((s, r) => s + (r.newIRating - r.oldIRating), 0) /
+                racesWithIR.length
+            )
+          : 0,
+    };
+  });
+}
+
+export function getZeitanalyse(races: RecentRace[]): ZeitanalyseData {
+  // Day of week: UTC day (0=Sun, 1=Mon, ..., 6=Sat)
+  const dayBuckets: RecentRace[][] = Array.from({ length: 7 }, () => []);
+  // Hour of day: UTC hour grouped into 2-hour blocks (0=0-1, 1=2-3, ..., 11=22-23)
+  const hourBuckets: RecentRace[][] = Array.from({ length: 12 }, () => []);
+
+  for (const race of races) {
+    const d = new Date(race.sessionStartTime);
+    if (isNaN(d.getTime())) continue;
+    dayBuckets[d.getUTCDay()].push(race);
+    hourBuckets[Math.floor(d.getUTCHours() / 2)].push(race);
+  }
+
+  const dayPoints = buildZeitanalysePoints(dayBuckets).map((p, i) => ({
+    ...p,
+    label: DAY_LABELS[i],
+  }));
+
+  const hourPoints = buildZeitanalysePoints(hourBuckets).map((p, i) => ({
+    ...p,
+    label: HOUR_BLOCK_LABELS[i],
+  }));
+
+  // Sort days to start from Monday (1) and wrap Sunday (0) to the end
+  const sorted = [...dayPoints.slice(1), dayPoints[0]];
+
+  return { byDayOfWeek: sorted, byHourOfDay: hourPoints };
 }
 
 function formatSeriesShortName(name: string): string {

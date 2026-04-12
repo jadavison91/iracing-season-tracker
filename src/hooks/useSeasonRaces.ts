@@ -22,7 +22,7 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
 
   // iRacing API uses 0-indexed positions, so add 1 for display
   // But only if the position is >= 0 (valid position)
-  const adjustPosition = (pos: number) => pos >= 0 ? pos + 1 : pos;
+  const adjustPosition = (pos: number) => (pos >= 0 ? pos + 1 : pos);
 
   const startPos = toNumber(raw.start_position ?? raw.starting_position ?? raw.startPosition, 0);
   const finishPos = toNumber(raw.finish_position ?? raw.finishPosition, 0);
@@ -34,12 +34,17 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
     seasonId: toNumber(raw.season_id ?? raw.seasonId),
     seriesId: toNumber(raw.series_id ?? raw.seriesId),
     seriesName: String(raw.series_name ?? raw.seriesName ?? 'Unknown Series'),
-    sessionStartTime: String(raw.session_start_time ?? raw.sessionStartTime ?? raw.start_time ?? ''),
+    sessionStartTime: String(
+      raw.session_start_time ?? raw.sessionStartTime ?? raw.start_time ?? ''
+    ),
     eventType: toNumber(raw.event_type ?? raw.eventType, 5),
     eventTypeName: String(raw.event_type_name ?? raw.eventTypeName ?? 'Race'),
     trackId: toNumber(raw.track_id ?? raw.trackId ?? track?.track_id),
     trackName: String(raw.track_name ?? raw.trackName ?? track?.track_name ?? 'Unknown Track'),
-    trackCategoryId: toNumber(raw.track_category_id ?? raw.license_category_id ?? raw.category_id ?? track?.category_id, 0),
+    trackCategoryId: toNumber(
+      raw.track_category_id ?? raw.license_category_id ?? raw.category_id ?? track?.category_id,
+      0
+    ),
     raceWeekNum: toNumber(raw.race_week_num ?? raw.raceWeekNum, 0),
     startPosition: adjustPosition(startPos),
     finishPosition: adjustPosition(finishPos),
@@ -62,14 +67,18 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
     oldIRating: toNumber(raw.oldi_rating ?? raw.old_irating ?? raw.oldIRating),
     newSafetyRating: toNumber(raw.new_sub_level ?? raw.newSafetyRating),
     oldSafetyRating: toNumber(raw.old_sub_level ?? raw.oldSafetyRating),
-    strengthOfField: toNumber(raw.strength_of_field ?? raw.event_strength_of_field ?? raw.strengthOfField),
+    strengthOfField: toNumber(
+      raw.strength_of_field ?? raw.event_strength_of_field ?? raw.strengthOfField
+    ),
     numDrivers: toNumber(raw.num_drivers ?? raw.numDrivers),
-    winnerName: raw.winner_name ?? raw.winnerName ? String(raw.winner_name ?? raw.winnerName) : undefined,
-    winnerCustId: raw.winner_cust_id ?? raw.winnerCustId ? toNumber(raw.winner_cust_id ?? raw.winnerCustId) : undefined,
+    winnerName:
+      (raw.winner_name ?? raw.winnerName) ? String(raw.winner_name ?? raw.winnerName) : undefined,
+    winnerCustId:
+      (raw.winner_cust_id ?? raw.winnerCustId)
+        ? toNumber(raw.winner_cust_id ?? raw.winnerCustId)
+        : undefined,
   };
 }
-
-
 
 async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
   if (USE_MOCK_DATA) {
@@ -103,7 +112,9 @@ async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
   const races = racesArray.map((raw: Record<string, unknown>) => transformRace(raw));
 
   // Sort by session start time (newest first)
-  races.sort((a, b) => new Date(b.sessionStartTime).getTime() - new Date(a.sessionStartTime).getTime());
+  races.sort(
+    (a, b) => new Date(b.sessionStartTime).getTime() - new Date(a.sessionStartTime).getTime()
+  );
 
   console.log('[useSeasonRaces] Loaded', races.length, 'races');
 

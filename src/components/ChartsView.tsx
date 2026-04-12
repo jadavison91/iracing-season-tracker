@@ -12,6 +12,12 @@ import { IncidentTrendChart } from '@/components/charts/IncidentTrendChart';
 import { FinishTrendChart } from '@/components/charts/FinishTrendChart';
 import { SoFDistributionChart } from '@/components/charts/SoFDistributionChart';
 import { ChampionshipPointsChart } from '@/components/charts/ChampionshipPointsChart';
+import { PositionsGainedChart } from '@/components/charts/PositionsGainedChart';
+import { TrackPerformanceTable } from '@/components/charts/TrackPerformanceTable';
+import { BestLapTimesTable } from '@/components/charts/BestLapTimesTable';
+import { SeasonComparisonTable } from '@/components/charts/SeasonComparisonTable';
+import { ZeitanalyseChart } from '@/components/charts/ZeitanalyseChart';
+import { LearningCurveTable } from '@/components/charts/LearningCurveTable';
 import {
   calculateVirtualIRating,
   getSeriesAchievements,
@@ -19,6 +25,11 @@ import {
   getSoFDistribution,
   getFinishPositionTrend,
   getChampionshipPointsBySeries,
+  getPositionsGained,
+  getTrackPerformance,
+  getBestLaps,
+  getZeitanalyse,
+  getLearningCurve,
 } from '@/lib/mock-data';
 
 interface ChartsViewProps {
@@ -61,6 +72,11 @@ export function ChartsView({ customerId }: ChartsViewProps) {
       sofDistribution: getSoFDistribution(races),
       finishTrend: getFinishPositionTrend(races),
       championshipPoints: getChampionshipPointsBySeries(races),
+      positionsGained: getPositionsGained(races),
+      trackPerformance: getTrackPerformance(races),
+      bestLaps: getBestLaps(races),
+      learningCurve: getLearningCurve(races),
+      zeitanalyse: getZeitanalyse(races),
     };
   }, [races]);
 
@@ -153,27 +169,46 @@ export function ChartsView({ customerId }: ChartsViewProps) {
         </div>
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
           <SummaryStatBox label="Races" value={summaryStats.totalRaces} />
-          <SummaryStatBox label="Wins" value={summaryStats.totalWins} highlight={summaryStats.totalWins > 0 ? 'gold' : undefined} />
-          <SummaryStatBox label="Podiums" value={summaryStats.totalPodiums} highlight={summaryStats.totalPodiums > 0 ? 'bronze' : undefined} />
+          <SummaryStatBox
+            label="Wins"
+            value={summaryStats.totalWins}
+            highlight={summaryStats.totalWins > 0 ? 'gold' : undefined}
+          />
+          <SummaryStatBox
+            label="Podiums"
+            value={summaryStats.totalPodiums}
+            highlight={summaryStats.totalPodiums > 0 ? 'bronze' : undefined}
+          />
           <SummaryStatBox label="Avg Inc" value={`${summaryStats.avgIncidents}x`} />
-          <SummaryStatBox label="Best iR Gain" value={`+${summaryStats.bestIRatingGain}`} highlight="green" />
+          <SummaryStatBox
+            label="Best iR Gain"
+            value={`+${summaryStats.bestIRatingGain}`}
+            highlight="green"
+          />
           <SummaryStatBox label="iR Data" value={summaryStats.racesWithIRating} />
         </div>
       </div>
 
       {/* iRating Section */}
       <section>
-        <SectionHeader title="iRating Progression" description="Track your rating changes over time" />
+        <SectionHeader
+          title="iRating Progression"
+          description="Track your rating changes over time"
+        />
         <div className="mt-4 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>iRating by Discipline</CardTitle>
               <CardDescription>
-                Track your overall iRating progression across different racing disciplines throughout the season
+                Track your overall iRating progression across different racing disciplines
+                throughout the season
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <IRatingByCategoryChart racesByDiscipline={racesByDiscipline} isLoading={disciplineLoading} />
+              <IRatingByCategoryChart
+                racesByDiscipline={racesByDiscipline}
+                isLoading={disciplineLoading}
+              />
             </CardContent>
           </Card>
 
@@ -181,8 +216,8 @@ export function ChartsView({ customerId }: ChartsViewProps) {
             <CardHeader>
               <CardTitle>Virtual Series iRating</CardTitle>
               <CardDescription>
-                Track your iRating progression as if it were calculated per-series.
-                Each series starts from your actual iRating at your first race.
+                Track your iRating progression as if it were calculated per-series. Each series
+                starts from your actual iRating at your first race.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -211,9 +246,7 @@ export function ChartsView({ customerId }: ChartsViewProps) {
           <Card>
             <CardHeader>
               <CardTitle>Achievement Stats</CardTitle>
-              <CardDescription>
-                Your accomplishments broken down by series
-              </CardDescription>
+              <CardDescription>Your accomplishments broken down by series</CardDescription>
             </CardHeader>
             <CardContent>
               <AchievementsTable data={chartData.achievements} />
@@ -230,9 +263,7 @@ export function ChartsView({ customerId }: ChartsViewProps) {
             <Card>
               <CardHeader>
                 <CardTitle>Incident Trend</CardTitle>
-                <CardDescription>
-                  Track your incident count over time
-                </CardDescription>
+                <CardDescription>Track your incident count over time</CardDescription>
               </CardHeader>
               <CardContent>
                 <IncidentTrendChart data={chartData.incidentTrend} />
@@ -263,6 +294,112 @@ export function ChartsView({ customerId }: ChartsViewProps) {
               <SoFDistributionChart data={chartData.sofDistribution} />
             </CardContent>
           </Card>
+        </div>
+      </section>
+
+      {/* Race Analysis Section */}
+      <section>
+        <SectionHeader
+          title="Race Analysis"
+          description="Starting positions vs finishing positions"
+        />
+        <div className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Positions Gained / Lost</CardTitle>
+              <CardDescription>
+                How many positions you gained or lost from your starting spot each race
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PositionsGainedChart data={chartData.positionsGained} />
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Zeitanalyse Section */}
+      <section>
+        <SectionHeader
+          title="Timing Analysis"
+          description="When do you race best? Performance by day of week and time of day"
+        />
+        <div className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Zeitanalyse</CardTitle>
+              <CardDescription>
+                Average finish, incidents, win rate, and iRating delta broken down by day and hour
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ZeitanalyseChart data={chartData.zeitanalyse} />
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Season Comparison Section */}
+      <section>
+        <SectionHeader
+          title="Season Comparison"
+          description="Side-by-side stats across your last two seasons"
+        />
+        <div className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Season by Season</CardTitle>
+              <CardDescription>
+                Wins, podiums, iRating change, and more — compared across seasons
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SeasonComparisonTable races={races} />
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Track Stats Section */}
+      <section>
+        <SectionHeader title="Track Stats" description="Performance broken down by circuit" />
+        <div className="mt-4 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Track Performance</CardTitle>
+              <CardDescription>
+                Finish positions, incidents, and wins at each track this season
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TrackPerformanceTable data={chartData.trackPerformance} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Best Lap Times</CardTitle>
+              <CardDescription>Your fastest recorded lap at each track</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BestLapTimesTable data={chartData.bestLaps} />
+            </CardContent>
+          </Card>
+
+          {chartData.learningCurve.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Learning Curve</CardTitle>
+                <CardDescription>
+                  Lap time improvement across multiple visits to the same track. Click a row to see
+                  each visit.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <LearningCurveTable data={chartData.learningCurve} />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </section>
     </div>

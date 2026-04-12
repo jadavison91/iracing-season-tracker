@@ -16,7 +16,10 @@ export interface CarClassStats {
   worstFinish: number;
 }
 
-export interface ActiveSeriesData extends Omit<SeriesSummary, 'racesEntered' | 'avgFinish' | 'totalPoints' | 'bestFinish' | 'worstFinish'> {
+export interface ActiveSeriesData extends Omit<
+  SeriesSummary,
+  'racesEntered' | 'avgFinish' | 'totalPoints' | 'bestFinish' | 'worstFinish'
+> {
   category: string;
   // Stats for the primary (most driven) class
   carId: number | null;
@@ -38,6 +41,18 @@ export function useActiveSeries(customerId: number | null) {
   const activeSeries = useMemo(() => {
     if (!races || races.length === 0) return [];
 
+    // Determine when the current iRacing season started by finding the most
+    // recent race with raceWeekNum === 0 (first week of a season) across all series.
+    // All series share the same season calendar, so this gives us the season boundary.
+    const weekZeroRaces = races.filter((r) => r.raceWeekNum === 0);
+    const currentSeasonStart =
+      weekZeroRaces.length > 0
+        ? weekZeroRaces.reduce((latest, r) => {
+            const d = new Date(r.sessionStartTime);
+            return d > latest ? d : latest;
+          }, new Date(0))
+        : null;
+
     // Group races by series
     const seriesMap = new Map<number, typeof races>();
     races.forEach((race) => {
@@ -48,9 +63,23 @@ export function useActiveSeries(customerId: number | null) {
 
     // Calculate summary for each series
     const summaries: ActiveSeriesData[] = [];
-    seriesMap.forEach((seriesRaces, seriesId) => {
+    seriesMap.forEach((allSeriesRaces, seriesId) => {
       // Safety check - skip if no races (shouldn't happen, but just in case)
-      if (!seriesRaces || seriesRaces.length === 0) return;
+      if (!allSeriesRaces || allSeriesRaces.length === 0) return;
+
+      // Only include races from the most recent season for this series.
+      // The 12-week window can overlap the tail of a prior season — filter it out.
+      const maxSeasonId = Math.max(...allSeriesRaces.map((r) => r.seasonId));
+      const seriesRaces = allSeriesRaces.filter((r) => r.seasonId === maxSeasonId);
+
+      // Skip this series if all its races pre-date the current season start.
+      // This excludes series the driver only raced in the previous season.
+      if (currentSeasonStart) {
+        const hasCurrentSeasonRace = seriesRaces.some(
+          (r) => new Date(r.sessionStartTime) >= currentSeasonStart!
+        );
+        if (!hasCurrentSeasonRace) return;
+      }
 
       const firstRace = seriesRaces[0];
       // Safety check for missing seriesName
@@ -77,19 +106,38 @@ export function useActiveSeries(customerId: number | null) {
         const trackLower = firstRace.trackName.toLowerCase();
 
         // Dirt road series keywords
-        const dirtRoadKeywords = ['dirt', 'off-road', 'offroad', 'rallycross', 'rx', 'pro lite', 'pro 2', 'pro 4',
-                                   'cross car', 'trophy truck', 'stadium truck', 'short course'];
+        const dirtRoadKeywords = [
+          'dirt',
+          'off-road',
+          'offroad',
+          'rallycross',
+          'rx',
+          'pro lite',
+          'pro 2',
+          'pro 4',
+          'cross car',
+          'trophy truck',
+          'stadium truck',
+          'short course',
+        ];
         // Oval series keywords
         const ovalKeywords = ['nascar', 'oval', 'superspeedway', 'speedway'];
         // Dirt oval keywords
-        const dirtOvalKeywords = ['sprint car', 'world of outlaws', 'usac', 'midget', 'silver crown',
-                                   'dirt late model', 'ump modified'];
+        const dirtOvalKeywords = [
+          'sprint car',
+          'world of outlaws',
+          'usac',
+          'midget',
+          'silver crown',
+          'dirt late model',
+          'ump modified',
+        ];
 
-        if (dirtRoadKeywords.some(kw => seriesLower.includes(kw) || trackLower.includes(kw))) {
+        if (dirtRoadKeywords.some((kw) => seriesLower.includes(kw) || trackLower.includes(kw))) {
           category = 'dirt_road';
-        } else if (dirtOvalKeywords.some(kw => seriesLower.includes(kw))) {
+        } else if (dirtOvalKeywords.some((kw) => seriesLower.includes(kw))) {
           category = 'dirt_oval';
-        } else if (ovalKeywords.some(kw => seriesLower.includes(kw))) {
+        } else if (ovalKeywords.some((kw) => seriesLower.includes(kw))) {
           category = 'oval';
         }
       }
@@ -133,13 +181,16 @@ export function useActiveSeries(customerId: number | null) {
 
         const finishPositions = classRaces.map((r) => r.finishPositionInClass);
 
-        // Only count the best result per race week (iRacing championship scoring)
-        const bestPointsByWeek = new Map<number, number>();
+        // Championship scoring: best result per week, sum of top 8 weeks
+        const weeklyBest = new Map<number, number>();
         classRaces.forEach((r) => {
-          const current = bestPointsByWeek.get(r.raceWeekNum) ?? 0;
-          if (r.champPoints > current) bestPointsByWeek.set(r.raceWeekNum, r.champPoints);
+          const prev = weeklyBest.get(r.raceWeekNum) ?? 0;
+          if (r.champPoints > prev) weeklyBest.set(r.raceWeekNum, r.champPoints);
         });
-        const totalPoints = Array.from(bestPointsByWeek.values()).reduce((sum, pts) => sum + pts, 0);
+        const totalPoints = [...weeklyBest.values()]
+          .sort((a, b) => b - a)
+          .slice(0, 8)
+          .reduce((sum, pts) => sum + pts, 0);
         const className = classRaces[0]?.carClassName || classRaces[0]?.carClassShortName || '';
 
         classStats.push({
@@ -148,7 +199,9 @@ export function useActiveSeries(customerId: number | null) {
           carId: mostDrivenCarId,
           carName: mostDrivenCarName,
           racesEntered: classRaces.length,
-          avgFinish: Math.round((finishPositions.reduce((a, b) => a + b, 0) / finishPositions.length) * 10) / 10,
+          avgFinish:
+            Math.round((finishPositions.reduce((a, b) => a + b, 0) / finishPositions.length) * 10) /
+            10,
           totalPoints,
           bestFinish: Math.min(...finishPositions),
           worstFinish: Math.max(...finishPositions),
@@ -182,9 +235,7 @@ export function useActiveSeries(customerId: number | null) {
 
     // Filter out series with no championship points (fun/special events)
     // and sort by total points descending
-    return summaries
-      .filter((s) => s.totalPoints > 0)
-      .sort((a, b) => b.totalPoints - a.totalPoints);
+    return summaries.filter((s) => s.totalPoints > 0).sort((a, b) => b.totalPoints - a.totalPoints);
   }, [races, customerId]);
 
   return {

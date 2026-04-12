@@ -40,11 +40,14 @@ function getWeekStatus(
 function getBestResult(races: RecentRace[]): RecentRace | null {
   if (races.length === 0) return null;
 
-  return races.reduce((best, race) => {
-    if (!best) return race;
-    // Sort by championship points (higher is better)
-    return race.champPoints > best.champPoints ? race : best;
-  }, null as RecentRace | null);
+  return races.reduce(
+    (best, race) => {
+      if (!best) return race;
+      // Sort by championship points (higher is better)
+      return race.champPoints > best.champPoints ? race : best;
+    },
+    null as RecentRace | null
+  );
 }
 
 export interface SeriesScheduleResult {
@@ -78,11 +81,7 @@ export function useSeriesSchedule(
   });
 
   // Fetch race data for the driver
-  const {
-    data: allRaces,
-    isLoading: racesLoading,
-    error: racesError,
-  } = useSeasonRaces(customerId);
+  const { data: allRaces, isLoading: racesLoading, error: racesError } = useSeasonRaces(customerId);
 
   // Combine schedule with race results and calculate counting weeks
   const { weekResults, seasonTotal, weeksCompleted, weeksCounting } = useMemo(() => {
@@ -95,7 +94,11 @@ export function useSeriesSchedule(
 
     // First pass: create week results without isCounting flag
     const preliminaryResults = scheduleData.weeks.map((week) => {
-      const weekRaces = seriesRaces.filter((r) => r.raceWeekNum === week.raceWeekNum);
+      // Filter by both raceWeekNum AND seasonId to avoid prior-season results
+      // appearing in upcoming weeks of the current season.
+      const weekRaces = seriesRaces.filter(
+        (r) => r.raceWeekNum === week.raceWeekNum && r.seasonId === scheduleData.seasonId
+      );
       const bestResult = getBestResult(weekRaces);
       const hasResults = weekRaces.length > 0;
       const status = getWeekStatus(week, hasResults);

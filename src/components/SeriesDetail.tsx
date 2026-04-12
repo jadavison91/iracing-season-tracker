@@ -11,7 +11,12 @@ import { FinishPositionChart } from '@/components/charts/FinishPositionChart';
 import { RaceResultsTable } from '@/components/RaceResultsTable';
 import { RaceDetailModal } from '@/components/RaceDetailModal';
 import { RaceComparison } from '@/components/RaceComparison';
-import { RaceFiltersBar, RaceFilters, defaultFilters, applyRaceFilters } from '@/components/RaceFilters';
+import {
+  RaceFiltersBar,
+  RaceFilters,
+  defaultFilters,
+  applyRaceFilters,
+} from '@/components/RaceFilters';
 import { SeasonScheduleTable } from '@/components/SeasonScheduleTable';
 import { EmptyState } from '@/components/EmptyState';
 import { RecentRace, WeekResult } from '@/lib/iracing/types';
@@ -32,7 +37,12 @@ interface CarOption {
 export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
   const router = useRouter();
   const { data, isLoading, error } = useSeriesRaces(customerId, seriesId);
-  const { weekResults, seasonTotal, weeksCounting, isLoading: scheduleLoading } = useSeriesSchedule(customerId, seriesId);
+  const {
+    weekResults,
+    seasonTotal,
+    weeksCounting,
+    isLoading: scheduleLoading,
+  } = useSeriesSchedule(customerId, seriesId);
   const [selectedRace, setSelectedRace] = useState<RecentRace | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRaceIds, setSelectedRaceIds] = useState<number[]>([]);
@@ -110,12 +120,13 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
       const filteredAllResults = week.allResults.filter((r) => r.carId === selectedCarId);
 
       // Find best result from filtered races
-      const bestResult = filteredAllResults.length > 0
-        ? filteredAllResults.reduce((best, r) =>
-            !best || r.champPoints > best.champPoints ? r : best,
-            null as RecentRace | null
-          )
-        : null;
+      const bestResult =
+        filteredAllResults.length > 0
+          ? filteredAllResults.reduce(
+              (best, r) => (!best || r.champPoints > best.champPoints ? r : best),
+              null as RecentRace | null
+            )
+          : null;
 
       // Determine status based on filtered results
       // If week was completed but no races with this car, mark as 'skipped' (week passed, didn't race this car)
@@ -153,6 +164,7 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
 
   // Recalculate season totals for filtered results
   const filteredSeasonStats = useMemo(() => {
+    // Include completed weeks AND the active week (if the driver has raced in it)
     const completedWeeks = carFilteredWeekResults.filter(
       (w) => (w.status === 'completed' || w.status === 'active') && w.bestResult
     );
@@ -171,9 +183,8 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
     };
   }, [carFilteredWeekResults]);
 
-  const selectedRacesForComparison = data?.races.filter((r) =>
-    selectedRaceIds.includes(r.subsessionId)
-  ) || [];
+  const selectedRacesForComparison =
+    data?.races.filter((r) => selectedRaceIds.includes(r.subsessionId)) || [];
 
   const filteredRaces = carFilteredRaces ? applyRaceFilters(carFilteredRaces, filters) : [];
 
@@ -307,14 +318,30 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
             <StatGroup title="Positions">
               <StatBox label="Avg Finish" value={filteredStats?.avgFinish ?? 0} />
               <StatBox label="Avg Start" value={filteredStats?.avgStart ?? 0} />
-              <StatBox label="Best" value={`P${filteredStats?.bestFinish ?? '-'}`} highlight="green" />
-              <StatBox label="Worst" value={`P${filteredStats?.worstFinish ?? '-'}`} highlight="red" />
+              <StatBox
+                label="Best"
+                value={`P${filteredStats?.bestFinish ?? '-'}`}
+                highlight="green"
+              />
+              <StatBox
+                label="Worst"
+                value={`P${filteredStats?.worstFinish ?? '-'}`}
+                highlight="red"
+              />
             </StatGroup>
 
             {/* Highlights */}
             <StatGroup title="Highlights">
-              <StatBox label="Wins" value={filteredStats?.wins ?? 0} highlight={(filteredStats?.wins ?? 0) > 0 ? 'gold' : undefined} />
-              <StatBox label="Podiums" value={filteredStats?.podiums ?? 0} highlight={(filteredStats?.podiums ?? 0) > 0 ? 'bronze' : undefined} />
+              <StatBox
+                label="Wins"
+                value={filteredStats?.wins ?? 0}
+                highlight={(filteredStats?.wins ?? 0) > 0 ? 'gold' : undefined}
+              />
+              <StatBox
+                label="Podiums"
+                value={filteredStats?.podiums ?? 0}
+                highlight={(filteredStats?.podiums ?? 0) > 0 ? 'bronze' : undefined}
+              />
               <StatBox label="Top 5s" value={filteredStats?.top5s ?? 0} />
             </StatGroup>
 
@@ -334,9 +361,9 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
           <CardTitle>Finish Position Trend</CardTitle>
           <CardDescription>
             Your finishing positions over recent races (lower is better)
-            {selectedCarId && carOptions.find(c => c.carId === selectedCarId) && (
+            {selectedCarId && carOptions.find((c) => c.carId === selectedCarId) && (
               <span className="ml-2 text-blue-600 dark:text-blue-400">
-                · {carOptions.find(c => c.carId === selectedCarId)?.carName}
+                · {carOptions.find((c) => c.carId === selectedCarId)?.carName}
               </span>
             )}
           </CardDescription>
@@ -387,9 +414,9 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
                 <CardTitle>Season Schedule</CardTitle>
                 <CardDescription>
                   12-week season grid with best results per week
-                  {selectedCarId && carOptions.find(c => c.carId === selectedCarId) && (
+                  {selectedCarId && carOptions.find((c) => c.carId === selectedCarId) && (
                     <span className="ml-2 text-blue-600 dark:text-blue-400">
-                      · {carOptions.find(c => c.carId === selectedCarId)?.carName}
+                      · {carOptions.find((c) => c.carId === selectedCarId)?.carName}
                     </span>
                   )}
                 </CardDescription>
@@ -425,7 +452,9 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Race Results</CardTitle>
-                <CardDescription>Click a race for details · Select races to compare</CardDescription>
+                <CardDescription>
+                  Click a race for details · Select races to compare
+                </CardDescription>
               </div>
               {selectedRaceIds.length >= 2 && (
                 <Button onClick={() => setComparisonOpen(true)}>
@@ -434,9 +463,7 @@ export function SeriesDetail({ customerId, seriesId }: SeriesDetailProps) {
               )}
             </div>
             {selectedRaceIds.length === 1 && (
-              <p className="text-sm text-zinc-500 mt-2">
-                Select at least one more race to compare
-              </p>
+              <p className="text-sm text-zinc-500 mt-2">Select at least one more race to compare</p>
             )}
           </CardHeader>
           <CardContent className="space-y-4">
@@ -494,9 +521,7 @@ function StatGroup({ title, children }: StatGroupProps) {
       <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
         {title}
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        {children}
-      </div>
+      <div className="grid grid-cols-2 gap-2">{children}</div>
     </div>
   );
 }
@@ -571,19 +596,18 @@ function SeriesDetailSkeleton() {
 }
 
 function SeasonProgressBadge({ weekResults }: { weekResults: WeekResult[] }) {
-  const completed = weekResults.filter((w) => w.status === 'completed').length;
+  // Count completed weeks + active week (if raced)
+  const raced = weekResults.filter(
+    (w) => w.status === 'completed' || (w.status === 'active' && w.bestResult)
+  ).length;
   const skipped = weekResults.filter((w) => w.status === 'skipped').length;
-  const total = weekResults.length;
-  const raced = completed;
 
   return (
     <div className="text-right">
       <div className="text-sm font-medium">
-        {raced} / {total - skipped} weeks
+        {raced} / {weekResults.length} weeks
       </div>
-      <div className="text-xs text-zinc-500">
-        {skipped > 0 && `${skipped} skipped`}
-      </div>
+      <div className="text-xs text-zinc-500">{skipped > 0 && `${skipped} skipped`}</div>
     </div>
   );
 }

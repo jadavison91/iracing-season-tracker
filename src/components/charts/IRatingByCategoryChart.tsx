@@ -27,10 +27,30 @@ export const DISCIPLINE_CONFIG: Record<Discipline, { label: string; color: strin
 interface ChartDataPoint {
   date: string;
   displayDate: string;
-  iRating: number;
+  iRating: number | null;
+  projection: number | null;
   delta: number;
   seriesName: string;
   trackName: string;
+  isProjected: boolean;
+}
+
+const PROJECTION_RACES = 10;
+const MILESTONES = [1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000];
+
+/** Simple least-squares linear regression. Returns slope (iR per race). */
+function linearRegression(values: number[]): number {
+  const n = values.length;
+  if (n < 2) return 0;
+  const xMean = (n - 1) / 2;
+  const yMean = values.reduce((s, v) => s + v, 0) / n;
+  let num = 0;
+  let den = 0;
+  values.forEach((y, x) => {
+    num += (x - xMean) * (y - yMean);
+    den += (x - xMean) ** 2;
+  });
+  return den === 0 ? 0 : num / den;
 }
 
 interface IRatingByCategoryChartProps {
@@ -47,15 +67,33 @@ function getDiscipline(seriesName: string): Discipline {
   if (name.includes('dirt') && name.includes('oval')) {
     return 'dirt_oval';
   }
-  if (name.includes('dirt') || name.includes('off-road') || name.includes('offroad') ||
-      name.includes('rallycross') || name.includes('pro 2') || name.includes('cross car')) {
+  if (
+    name.includes('dirt') ||
+    name.includes('off-road') ||
+    name.includes('offroad') ||
+    name.includes('rallycross') ||
+    name.includes('pro 2') ||
+    name.includes('cross car')
+  ) {
     return 'dirt_road';
   }
-  if (name.includes('oval') || name.includes('nascar') || name.includes('arca') || name.includes('truck')) {
+  if (
+    name.includes('oval') ||
+    name.includes('nascar') ||
+    name.includes('arca') ||
+    name.includes('truck')
+  ) {
     return 'oval';
   }
-  if (name.includes('formula') || name.includes(' f1') || name.includes(' f2') ||
-      name.includes(' f3') || name.includes('ir-04') || name.includes('usf') || name.includes('indy')) {
+  if (
+    name.includes('formula') ||
+    name.includes(' f1') ||
+    name.includes(' f2') ||
+    name.includes(' f3') ||
+    name.includes('ir-04') ||
+    name.includes('usf') ||
+    name.includes('indy')
+  ) {
     return 'formula';
   }
   // Default road racing to sports_car
@@ -82,7 +120,9 @@ function processRaceData(
     // Filter to races with valid iRating data and sort by date
     const validRaces = races
       .filter((r) => r.newIRating > 0)
-      .sort((a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime());
+      .sort(
+        (a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime()
+      );
 
     result[discipline] = validRaces.map((race) => {
       const date = new Date(race.sessionStartTime);
@@ -90,9 +130,11 @@ function processRaceData(
         date: race.sessionStartTime,
         displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         iRating: race.newIRating,
+        projection: null,
         delta: race.newIRating - race.oldIRating,
         seriesName: race.seriesName,
         trackName: race.trackName,
+        isProjected: false,
       };
     });
   });
@@ -100,13 +142,14 @@ function processRaceData(
   return result;
 }
 
-export function IRatingByCategoryChart({ racesByDiscipline, isLoading }: IRatingByCategoryChartProps) {
+export function IRatingByCategoryChart({
+  racesByDiscipline,
+  isLoading,
+}: IRatingByCategoryChartProps) {
   const [selectedDiscipline, setSelectedDiscipline] = useState<Discipline>('sports_car');
+  const [showProjection, setShowProjection] = useState(false);
 
-  const dataByDiscipline = useMemo(
-    () => processRaceData(racesByDiscipline),
-    [racesByDiscipline]
-  );
+  const dataByDiscipline = useMemo(() => processRaceData(racesByDiscipline), [racesByDiscipline]);
 
   // Find disciplines that have data
   const disciplinesWithData = useMemo(() => {
@@ -123,20 +166,58 @@ export function IRatingByCategoryChart({ racesByDiscipline, isLoading }: IRating
     return disciplinesWithData[0] || 'sports_car';
   }, [selectedDiscipline, dataByDiscipline, disciplinesWithData]);
 
-  const chartData = dataByDiscipline[activeDiscipline];
+  const actualData = dataByDiscipline[activeDiscipline];
   const config = DISCIPLINE_CONFIG[activeDiscipline];
 
   // Calculate starting iRating (from first race's oldIRating)
   const races = racesByDiscipline[activeDiscipline] || [];
-  const validRaces = races.filter(r => r.newIRating > 0).sort(
-    (a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime()
-  );
+  const validRaces = races
+    .filter((r) => r.newIRating > 0)
+    .sort(
+      (a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime()
+    );
   const startingIRating = validRaces.length > 0 ? validRaces[0].oldIRating : null;
 
+  // Build projection: linear regression over last 10 races → N projected points
+  const projectionData = useMemo((): ChartDataPoint[] => {
+    if (actualData.length < 3) return [];
+    const window = actualData.slice(-10);
+    const slope = linearRegression(window.map((p) => p.iRating as number));
+    const lastIR = window[window.length - 1].iRating as number;
+    return Array.from({ length: PROJECTION_RACES }, (_, i) => ({
+      date: '',
+      displayDate: `+${i + 1}`,
+      iRating: null,
+      projection: Math.round(lastIR + slope * (i + 1)),
+      delta: 0,
+      seriesName: '',
+      trackName: '',
+      isProjected: true,
+    }));
+  }, [actualData]);
+
+  // Merge actual + projection for the chart; last actual point bridges both lines
+  const chartData = useMemo((): ChartDataPoint[] => {
+    if (!showProjection || projectionData.length === 0) return actualData;
+    const last = actualData[actualData.length - 1];
+    const bridge: ChartDataPoint = { ...last, projection: last.iRating as number };
+    return [...actualData.slice(0, -1), bridge, ...projectionData];
+  }, [actualData, projectionData, showProjection]);
+
   // Calculate total change
-  const totalChange = chartData.length > 0 && startingIRating
-    ? chartData[chartData.length - 1].iRating - startingIRating
-    : 0;
+  const totalChange =
+    actualData.length > 0 && startingIRating
+      ? (actualData[actualData.length - 1].iRating as number) - startingIRating
+      : 0;
+
+  // Milestone reference lines: only those in visible iRating range
+  const visibleMilestones = useMemo(() => {
+    if (chartData.length === 0) return [];
+    const allIR = chartData.map((p) => (p.iRating ?? p.projection) as number).filter((v) => v > 0);
+    const minIR = Math.min(...allIR);
+    const maxIR = Math.max(...allIR);
+    return MILESTONES.filter((m) => m >= minIR - 50 && m <= maxIR + 200);
+  }, [chartData]);
 
   if (isLoading) {
     return (
@@ -188,27 +269,42 @@ export function IRatingByCategoryChart({ racesByDiscipline, isLoading }: IRating
         })}
       </div>
 
-      {/* Summary Stats */}
-      {chartData.length > 0 && (
-        <div className="flex items-center gap-6 text-sm">
+      {/* Summary Stats + projection toggle */}
+      {actualData.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           <div>
             <span className="text-zinc-500">Starting:</span>{' '}
             <span className="font-medium">{startingIRating?.toLocaleString()}</span>
           </div>
           <div>
             <span className="text-zinc-500">Current:</span>{' '}
-            <span className="font-medium">{chartData[chartData.length - 1].iRating.toLocaleString()}</span>
+            <span className="font-medium">
+              {(actualData[actualData.length - 1].iRating as number).toLocaleString()}
+            </span>
           </div>
           <div>
             <span className="text-zinc-500">Change:</span>{' '}
             <span className={`font-medium ${totalChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {totalChange >= 0 ? '+' : ''}{totalChange}
+              {totalChange >= 0 ? '+' : ''}
+              {totalChange}
             </span>
           </div>
           <div>
             <span className="text-zinc-500">Races:</span>{' '}
-            <span className="font-medium">{chartData.length}</span>
+            <span className="font-medium">{actualData.length}</span>
           </div>
+          {actualData.length >= 3 && (
+            <button
+              onClick={() => setShowProjection((v) => !v)}
+              className={`ml-auto rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
+                showProjection
+                  ? 'border-blue-400 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
+                  : 'border-zinc-200 text-zinc-500 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500'
+              }`}
+            >
+              {showProjection ? 'Hide projection' : 'Show projection'}
+            </button>
+          )}
         </div>
       )}
 
@@ -242,25 +338,55 @@ export function IRatingByCategoryChart({ racesByDiscipline, isLoading }: IRating
                 }}
               />
             )}
+            {visibleMilestones.map((m) => (
+              <ReferenceLine
+                key={m}
+                y={m}
+                stroke="#6b7280"
+                strokeDasharray="4 4"
+                strokeOpacity={0.5}
+                label={{
+                  value: m.toLocaleString(),
+                  position: 'right',
+                  fill: '#9ca3af',
+                  fontSize: 10,
+                }}
+              />
+            ))}
             <Tooltip
               content={({ active, payload }) => {
                 if (!active || !payload || payload.length === 0) return null;
                 const point = payload[0].payload as ChartDataPoint;
+                const ir = (point.iRating ?? point.projection) as number;
 
                 return (
                   <div className="rounded-lg border bg-white p-3 shadow-lg dark:bg-zinc-800 dark:border-zinc-700">
-                    <p className="font-medium">{point.displayDate}</p>
-                    <p className="text-sm text-zinc-500 mb-1">{point.seriesName}</p>
-                    <p className="text-xs text-zinc-400 mb-2">{point.trackName}</p>
+                    <p className="font-medium">
+                      {point.isProjected
+                        ? `Projected race ${point.displayDate}`
+                        : point.displayDate}
+                    </p>
+                    {!point.isProjected && (
+                      <>
+                        <p className="text-sm text-zinc-500 mb-1">{point.seriesName}</p>
+                        <p className="text-xs text-zinc-400 mb-2">{point.trackName}</p>
+                      </>
+                    )}
                     <div className="flex items-center gap-2">
                       <span
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: config.color }}
                       />
-                      <span className="font-bold">{point.iRating.toLocaleString()}</span>
-                      <span className={point.delta >= 0 ? 'text-green-600' : 'text-red-600'}>
-                        ({point.delta >= 0 ? '+' : ''}{point.delta})
-                      </span>
+                      <span className="font-bold">{ir.toLocaleString()}</span>
+                      {!point.isProjected && (
+                        <span className={point.delta >= 0 ? 'text-green-600' : 'text-red-600'}>
+                          ({point.delta >= 0 ? '+' : ''}
+                          {point.delta})
+                        </span>
+                      )}
+                      {point.isProjected && (
+                        <span className="text-xs text-zinc-400">(projected)</span>
+                      )}
                     </div>
                   </div>
                 );
@@ -273,7 +399,23 @@ export function IRatingByCategoryChart({ racesByDiscipline, isLoading }: IRating
               strokeWidth={2}
               dot={{ fill: config.color, strokeWidth: 0, r: 4 }}
               activeDot={{ r: 6, stroke: config.color, strokeWidth: 2, fill: 'white' }}
+              connectNulls={false}
+              name="Actual"
             />
+            {showProjection && (
+              <Line
+                type="monotone"
+                dataKey="projection"
+                stroke={config.color}
+                strokeWidth={2}
+                strokeDasharray="6 4"
+                strokeOpacity={0.6}
+                dot={false}
+                activeDot={{ r: 5, stroke: config.color, strokeWidth: 2, fill: 'white' }}
+                connectNulls={false}
+                name="Projection"
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>
