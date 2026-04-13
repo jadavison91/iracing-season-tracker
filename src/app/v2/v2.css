@@ -1,0 +1,234 @@
+/* ============================================================
+   V2 "Pitwall" Design System
+   Scoped to .v2 wrapper applied by V2Shell
+   ============================================================ */
+
+.v2 {
+  /* Background layers */
+  --v2-bg: #09090e;
+  --v2-surface: #111219;
+  --v2-surface-2: #1a1c26;
+  --v2-surface-3: #22253a;
+
+  /* Borders */
+  --v2-border: rgba(255, 255, 255, 0.07);
+  --v2-border-hi: rgba(255, 255, 255, 0.14);
+
+  /* Accent — electric lime */
+  --v2-accent: #c5f131;
+  --v2-accent-glow: rgba(197, 241, 49, 0.12);
+  --v2-accent-dim: rgba(197, 241, 49, 0.4);
+
+  /* Text */
+  --v2-text: #f0f0f2;
+  --v2-text-muted: #6b6b78;
+  --v2-text-dim: #36363e;
+
+  /* Semantic */
+  --v2-positive: #4ade80;
+  --v2-negative: #f87171;
+  --v2-warning: #fbbf24;
+
+  /* Discipline colors */
+  --disc-road: #c5f131;
+  --disc-formula: #60a5fa;
+  --disc-oval: #fbbf24;
+  --disc-dirt_oval: #a78bfa;
+  --disc-dirt_road: #34d399;
+  --disc-sports_car: #c5f131;
+
+  /* Typography */
+  font-family: var(--font-v2-sans, system-ui, sans-serif);
+  background-color: var(--v2-bg);
+  color: var(--v2-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Nav ─────────────────────────────────────────────────── */
+
+.v2-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  margin-bottom: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--v2-text-muted);
+  text-decoration: none;
+  transition:
+    background 0.12s,
+    color 0.12s;
+  letter-spacing: 0.01em;
+}
+
+.v2-nav-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--v2-text);
+}
+
+.v2-nav-link.active {
+  background: var(--v2-accent-glow);
+  color: var(--v2-accent);
+}
+
+/* ── Stat chips ──────────────────────────────────────────── */
+
+.v2-stat-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--v2-surface);
+  border: 1px solid var(--v2-border);
+  min-width: 86px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.v2-stat-chip .chip-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--v2-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.v2-stat-chip .chip-value {
+  font-family: var(--font-v2-mono, monospace);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--v2-text);
+}
+
+.v2-stat-chip .chip-value.positive {
+  color: var(--v2-positive);
+}
+.v2-stat-chip .chip-value.negative {
+  color: var(--v2-negative);
+}
+.v2-stat-chip .chip-value.accent {
+  color: var(--v2-accent);
+}
+
+/* ── Series rows ─────────────────────────────────────────── */
+
+.v2-series-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--v2-border);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.1s;
+  border-radius: 4px;
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.v2-series-row:last-child {
+  border-bottom: none;
+}
+
+.v2-series-row:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* ── Race cards ──────────────────────────────────────────── */
+
+.v2-race-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--v2-surface);
+  border: 1px solid var(--v2-border);
+  transition:
+    border-color 0.12s,
+    background 0.12s;
+  flex-shrink: 0;
+}
+
+.v2-race-card:hover {
+  border-color: var(--v2-border-hi);
+  background: var(--v2-surface-2);
+}
+
+/* ── Section labels ──────────────────────────────────────── */
+
+.v2-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--v2-text-muted);
+  margin-bottom: 14px;
+}
+
+/* ── Chart overrides ─────────────────────────────────────── */
+
+.v2-chart-tooltip {
+  background: var(--v2-surface-2);
+  border: 1px solid var(--v2-border-hi);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: var(--font-v2-sans, system-ui, sans-serif);
+  font-size: 12px;
+  color: var(--v2-text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Loading skeleton pulse ──────────────────────────────── */
+
+@keyframes v2-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.v2-skeleton {
+  background: var(--v2-surface-2);
+  border-radius: 6px;
+  animation: v2-pulse 1.6s ease-in-out infinite;
+}
+
+/* ── Fade-in entry animation ─────────────────────────────── */
+
+@keyframes v2-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.v2-fade-in {
+  animation: v2-fade-up 0.35s ease both;
+}
+
+.v2-fade-in-1 {
+  animation: v2-fade-up 0.35s 0.06s ease both;
+}
+.v2-fade-in-2 {
+  animation: v2-fade-up 0.35s 0.12s ease both;
+}
+.v2-fade-in-3 {
+  animation: v2-fade-up 0.35s 0.18s ease both;
+}
+.v2-fade-in-4 {
+  animation: v2-fade-up 0.35s 0.24s ease both;
+}
