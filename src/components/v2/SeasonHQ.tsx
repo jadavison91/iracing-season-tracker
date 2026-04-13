@@ -656,13 +656,10 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
     setCustomerId(customerId);
   }, [customerId, setCustomerId]);
 
-  if (!customerId) return <NullState />;
-
-  // ── Derived stats ──────────────────────────────────────
+  // ── All hooks must run unconditionally before any early return ──
 
   const seasonRaces = useMemo(() => {
     if (!races.length) return [];
-    // Sort newest first for display
     return [...races].sort(
       (a, b) => new Date(b.sessionStartTime).getTime() - new Date(a.sessionStartTime).getTime()
     );
@@ -679,7 +676,6 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
       seasonRaces.filter((r) => r.strengthOfField > 0).reduce((s, r) => s + r.strengthOfField, 0) /
       Math.max(seasonRaces.filter((r) => r.strengthOfField > 0).length, 1);
 
-    // iR delta: last race newIR - first race oldIR (for races with iR data)
     const withIR = seasonRaces.filter((r) => r.newIRating > 0);
     const irDelta =
       withIR.length >= 2 ? withIR[0].newIRating - withIR[withIR.length - 1].oldIRating : 0;
@@ -687,19 +683,12 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
     return { total, wins, podiums, avgInc, avgSoF, irDelta };
   }, [seasonRaces]);
 
-  const recentFive = seasonRaces.slice(0, 5);
-
-  // ── Primary iRating for hero display ──────────────────
-
   const primaryIR = useMemo(() => {
     if (!driver?.licenses.length) return null;
     const withIR = driver.licenses.filter((l) => l.iRating > 0);
     if (!withIR.length) return null;
-    const top = withIR.reduce((best, l) => (l.iRating > best.iRating ? l : best));
-    return top;
+    return withIR.reduce((best, l) => (l.iRating > best.iRating ? l : best));
   }, [driver]);
-
-  // ── Legend items for iRating chart ────────────────────
 
   const chartDiscs = useMemo(() => {
     if (!races.length) return [];
@@ -707,6 +696,11 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
     races.filter((r) => r.newIRating > 0).forEach((r) => seen.add(getDiscipline(r)));
     return Array.from(seen);
   }, [races]);
+
+  const recentFive = useMemo(() => seasonRaces.slice(0, 5), [seasonRaces]);
+
+  // ── Early return after all hooks ────────────────────────
+  if (!customerId) return <NullState />;
 
   return (
     <div style={{ padding: '28px 24px 40px' }} className="lg:px-10 lg:pt-10">
