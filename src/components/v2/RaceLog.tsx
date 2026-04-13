@@ -517,7 +517,7 @@ export function RaceLog({ customerId }: RaceLogProps) {
   const { races, isLoading } = driverData;
 
   const [discipline, setDiscipline] = useState<Discipline>('all');
-  const [selectedSeason, setSelectedSeason] = useState<string>('latest');
+  const [selectedSeason, setSelectedSeason] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
