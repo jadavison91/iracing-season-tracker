@@ -96,6 +96,7 @@ export interface ApiDriverRow {
   newi_rating?: number;
   new_irating?: number;
   best_lap_time?: number;
+  average_lap?: number;
   reason_out?: string;
 }
 

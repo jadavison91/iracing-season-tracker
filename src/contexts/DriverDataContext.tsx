@@ -184,8 +184,8 @@ async function fetchSubsessionData(
         newIRating = Number(myRow.newi_rating ?? myRow.new_irating ?? 0);
         // iRacing subsession API returns lap times in ten-thousandths of a second;
         // convert to hundredths to match our RecentRace type and formatLapTime expectations.
-        bestLapTime = Math.round(Number(myRow.best_lap_time ?? myRow.bestLapTime ?? 0) / 100);
-        averageLap = Math.round(Number(myRow.average_lap ?? myRow.averageLap ?? 0) / 100);
+        bestLapTime = Math.round(Number(myRow.best_lap_time ?? 0) / 100);
+        averageLap = Math.round(Number(myRow.average_lap ?? 0) / 100);
       }
     }
 
