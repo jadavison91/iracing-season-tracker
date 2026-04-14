@@ -24,6 +24,8 @@ export interface Encounter {
   raceId: string;
   date: string; // YYYY-MM-DD
   track: string;
+  seriesName: string;
+  carName: string;
   category: string; // formula | road | oval | dirt_oval | dirt_road
   sof: number;
   pos: number; // 1-indexed finish position
@@ -106,7 +108,14 @@ export interface ApiDriverRow {
  */
 export function mergeDriverGrid(
   subsessionId: number,
-  race: { date: string; trackName: string; category: string; sof: number },
+  race: {
+    date: string;
+    trackName: string;
+    seriesName: string;
+    carName: string;
+    category: string;
+    sof: number;
+  },
   driverRows: ApiDriverRow[],
   myCustId: number
 ): void {
@@ -153,6 +162,8 @@ export function mergeDriverGrid(
         raceId,
         date: race.date,
         track: race.trackName,
+        seriesName: race.seriesName,
+        carName: race.carName,
         category: race.category,
         sof: race.sof,
         pos: finPos,

@@ -236,6 +236,8 @@ async function enrichWithSubsessionData(
         {
           date: race.sessionStartTime.slice(0, 10),
           trackName: race.trackName,
+          seriesName: race.seriesName,
+          carName: race.carName,
           category: getDiscipline(race),
           sof: race.strengthOfField,
         },

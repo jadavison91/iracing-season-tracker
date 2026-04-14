@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   LineChart,
@@ -14,6 +15,9 @@ import {
 import { useDriverSummary } from '@/hooks';
 import { useActiveSeries } from '@/hooks/useActiveSeries';
 import { useDriverData, getDiscipline } from '@/contexts/DriverDataContext';
+import { useCarAssets, getCarImageUrl } from '@/hooks/useCarAssets';
+import { useSeriesSchedule } from '@/hooks/useSeriesSchedule';
+import { RaceDetailModal } from '@/components/RaceDetailModal';
 import { RecentRace } from '@/lib/iracing/types';
 
 // ── Types ─────────────────────────────────────────────────
@@ -151,6 +155,80 @@ interface IRChartPoint {
   [key: string]: string | number;
 }
 
+function IRatingTooltip({
+  active,
+  payload,
+  label,
+  points,
+}: {
+  active?: boolean;
+  payload?: { dataKey: string; value: number; color: string }[];
+  label?: string;
+  points: IRChartPoint[];
+}) {
+  if (!active || !payload || payload.length === 0) return null;
+  const pointData = points.find((p) => p.date === label);
+
+  return (
+    <div className="v2-chart-tooltip">
+      <div style={{ fontSize: 11, color: 'var(--v2-text-muted)', marginBottom: 6 }}>
+        {label ? formatDate(label) : ''}
+      </div>
+      {payload.map((entry) => {
+        const disc = entry.dataKey.replace('ir_', '');
+        return (
+          <div
+            key={disc}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}
+          >
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: entry.color,
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ fontSize: 12 }}>
+              <span style={{ color: 'var(--v2-text-muted)', marginRight: 4 }}>
+                {DISC_LABELS[disc] ?? disc}
+              </span>
+              <span
+                style={{
+                  fontFamily: 'var(--font-v2-mono, monospace)',
+                  fontWeight: 600,
+                  color: entry.color,
+                }}
+              >
+                {entry.value.toLocaleString()}
+              </span>
+            </span>
+          </div>
+        );
+      })}
+      {payload.length > 0 &&
+        (() => {
+          const disc = payload[0].dataKey.replace('ir_', '');
+          const track = pointData?.[`track_${disc}`] as string | undefined;
+          return track ? (
+            <div
+              style={{
+                fontSize: 10,
+                color: 'var(--v2-text-dim)',
+                marginTop: 4,
+                borderTop: '1px solid var(--v2-border)',
+                paddingTop: 4,
+              }}
+            >
+              {track}
+            </div>
+          ) : null;
+        })()}
+    </div>
+  );
+}
+
 function IRatingHeroChart({ races, isLoading }: { races: RecentRace[]; isLoading: boolean }) {
   const { series: discSeries, points } = useMemo(() => {
     const withIR = races
@@ -233,79 +311,6 @@ function IRatingHeroChart({ races, isLoading }: { races: RecentRace[]; isLoading
     );
   }
 
-  const CustomTooltip = ({
-    active,
-    payload,
-    label,
-  }: {
-    active?: boolean;
-    payload?: { dataKey: string; value: number; color: string }[];
-    label?: string;
-  }) => {
-    if (!active || !payload || payload.length === 0) return null;
-    const pointData = points.find((p) => p.date === label);
-
-    return (
-      <div className="v2-chart-tooltip">
-        <div style={{ fontSize: 11, color: 'var(--v2-text-muted)', marginBottom: 6 }}>
-          {label ? formatDate(label) : ''}
-        </div>
-        {payload.map((entry) => {
-          const disc = entry.dataKey.replace('ir_', '');
-          const track = pointData?.[`track_${disc}`] as string | undefined;
-          return (
-            <div
-              key={disc}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}
-            >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  background: entry.color,
-                  flexShrink: 0,
-                }}
-              />
-              <span style={{ fontSize: 12 }}>
-                <span style={{ color: 'var(--v2-text-muted)', marginRight: 4 }}>
-                  {DISC_LABELS[disc] ?? disc}
-                </span>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-v2-mono, monospace)',
-                    fontWeight: 600,
-                    color: entry.color,
-                  }}
-                >
-                  {entry.value.toLocaleString()}
-                </span>
-              </span>
-            </div>
-          );
-        })}
-        {payload.length > 0 &&
-          (() => {
-            const disc = payload[0].dataKey.replace('ir_', '');
-            const track = pointData?.[`track_${disc}`] as string | undefined;
-            return track ? (
-              <div
-                style={{
-                  fontSize: 10,
-                  color: 'var(--v2-text-dim)',
-                  marginTop: 4,
-                  borderTop: '1px solid var(--v2-border)',
-                  paddingTop: 4,
-                }}
-              >
-                {track}
-              </div>
-            ) : null;
-          })()}
-      </div>
-    );
-  };
-
   return (
     <div style={{ height: 220, marginTop: 8 }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -330,7 +335,7 @@ function IRatingHeroChart({ races, isLoading }: { races: RecentRace[]; isLoading
             tickFormatter={(v) => v.toLocaleString()}
           />
           <Tooltip
-            content={<CustomTooltip />}
+            content={<IRatingTooltip points={points} />}
             cursor={{ stroke: 'var(--v2-border-hi)', strokeWidth: 1 }}
           />
           {discSeries.map((disc) => (
@@ -373,45 +378,207 @@ function StatChip({
   );
 }
 
+// ── Discipline icon SVGs ──────────────────────────────────
+
+function DisciplineIcon({ category, color }: { category: string; color: string }) {
+  // Side-view car silhouettes for each discipline
+  switch (category) {
+    case 'formula':
+      // Open-wheel single-seater: narrow torpedo body, exposed wheels, front/rear wings
+      return (
+        <svg viewBox="0 0 60 28" fill="none" width="60" height="28">
+          {/* Rear wing */}
+          <rect x="46" y="7" width="9" height="2" rx="0.5" fill={color} opacity="0.7" />
+          <rect x="50" y="7" width="1.5" height="5" rx="0.5" fill={color} opacity="0.7" />
+          {/* Body */}
+          <path
+            d="M6,17 L10,17 L10,14 L14,11 L44,11 L49,13 L55,17 L55,19 L10,19 Z"
+            fill={color}
+            opacity="0.55"
+          />
+          {/* Cockpit hump */}
+          <path d="M20,11 L22,8 L32,8 L34,11 Z" fill={color} opacity="0.8" />
+          {/* Nose cone */}
+          <path d="M6,17 L10,14 L10,19 Z" fill={color} opacity="0.8" />
+          {/* Front wing */}
+          <rect x="1" y="18" width="10" height="1.5" rx="0.5" fill={color} opacity="0.7" />
+          {/* Wheels */}
+          <circle cx="15" cy="20" r="4.5" fill={color} opacity="0.4" />
+          <circle cx="15" cy="20" r="2.5" fill={color} opacity="0.7" />
+          <circle cx="45" cy="20" r="4.5" fill={color} opacity="0.4" />
+          <circle cx="45" cy="20" r="2.5" fill={color} opacity="0.7" />
+        </svg>
+      );
+
+    case 'oval':
+      // NASCAR stock car: wide, low, rounded greenhouse, full-body
+      return (
+        <svg viewBox="0 0 60 28" fill="none" width="60" height="28">
+          {/* Body lower */}
+          <path
+            d="M4,20 C4,20 4,16 8,15 L12,14 L48,14 L53,15 L56,18 L56,22 L4,22 Z"
+            fill={color}
+            opacity="0.5"
+          />
+          {/* Roof / greenhouse */}
+          <path d="M14,14 C14,14 16,9 20,8 L38,8 C42,8 44,10 46,14 Z" fill={color} opacity="0.8" />
+          {/* Splitter */}
+          <rect x="1" y="20" width="7" height="1.5" rx="0.5" fill={color} opacity="0.6" />
+          {/* Wheels (covered by fenders, subtle) */}
+          <circle cx="14" cy="22" r="3.5" fill={color} opacity="0.3" />
+          <circle cx="46" cy="22" r="3.5" fill={color} opacity="0.3" />
+        </svg>
+      );
+
+    case 'dirt_oval':
+      // Sprint car: prominent top wing, very large open wheels
+      return (
+        <svg viewBox="0 0 60 28" fill="none" width="60" height="28">
+          {/* Top wing */}
+          <rect x="8" y="3" width="44" height="3" rx="1" fill={color} opacity="0.7" />
+          <rect x="11" y="3" width="1.5" height="7" rx="0.5" fill={color} opacity="0.6" />
+          <rect x="47" y="3" width="1.5" height="7" rx="0.5" fill={color} opacity="0.6" />
+          {/* Body */}
+          <path
+            d="M14,10 L16,10 L18,10 L42,10 L46,10 L48,12 L48,20 L12,20 L12,12 Z"
+            fill={color}
+            opacity="0.55"
+          />
+          {/* Nose */}
+          <path d="M26,10 L34,10 L32,7 L28,7 Z" fill={color} opacity="0.7" />
+          {/* Exposed wheels — large */}
+          <circle cx="14" cy="20" r="5.5" fill={color} opacity="0.35" />
+          <circle cx="14" cy="20" r="3" fill={color} opacity="0.65" />
+          <circle cx="46" cy="20" r="5.5" fill={color} opacity="0.35" />
+          <circle cx="46" cy="20" r="3" fill={color} opacity="0.65" />
+        </svg>
+      );
+
+    case 'dirt_road':
+      // Off-road truck / buggy: high clearance, boxy, large tires
+      return (
+        <svg viewBox="0 0 60 28" fill="none" width="60" height="28">
+          {/* Body */}
+          <rect x="9" y="8" width="42" height="13" rx="2" fill={color} opacity="0.5" />
+          {/* Cab */}
+          <rect x="14" y="5" width="24" height="6" rx="2" fill={color} opacity="0.75" />
+          {/* Scoop / intake */}
+          <rect x="22" y="3" width="8" height="3" rx="1" fill={color} opacity="0.6" />
+          {/* Large wheels */}
+          <circle cx="16" cy="23" r="5.5" fill={color} opacity="0.35" />
+          <circle cx="16" cy="23" r="3" fill={color} opacity="0.7" />
+          <circle cx="44" cy="23" r="5.5" fill={color} opacity="0.35" />
+          <circle cx="44" cy="23" r="3" fill={color} opacity="0.7" />
+        </svg>
+      );
+
+    default:
+      // Sports car / road GT: low coupe with fastback roofline
+      return (
+        <svg viewBox="0 0 60 28" fill="none" width="60" height="28">
+          {/* Body lower */}
+          <path d="M4,20 L4,17 L8,16 L52,16 L57,18 L57,22 L4,22 Z" fill={color} opacity="0.5" />
+          {/* Roof fastback */}
+          <path d="M10,16 C10,16 14,9 20,8 L36,8 C42,8 48,11 50,16 Z" fill={color} opacity="0.8" />
+          {/* Rear diffuser */}
+          <rect x="53" y="19" width="5" height="1.5" rx="0.5" fill={color} opacity="0.6" />
+          {/* Wheels */}
+          <circle cx="15" cy="22" r="4" fill={color} opacity="0.35" />
+          <circle cx="15" cy="22" r="2.2" fill={color} opacity="0.7" />
+          <circle cx="45" cy="22" r="4" fill={color} opacity="0.35" />
+          <circle cx="45" cy="22" r="2.2" fill={color} opacity="0.7" />
+        </svg>
+      );
+  }
+}
+
 // ── Series row ────────────────────────────────────────────
 
 function SeriesRow({
   series,
   races,
   index,
+  carImageUrl,
+  customerId,
 }: {
   series: ReturnType<typeof useActiveSeries>['data'][number];
   races: RecentRace[];
   index: number;
+  carImageUrl: string | null;
+  customerId: number;
 }) {
-  const seriesRaces = races
-    .filter((r) => r.seriesId === series.seriesId)
-    .sort(
-      (a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime()
-    );
+  const { weekResults } = useSeriesSchedule(customerId, series.seriesId);
+
+  const seriesRaces = useMemo(
+    () =>
+      races
+        .filter((r) => r.seriesId === series.seriesId)
+        .sort(
+          (a, b) => new Date(a.sessionStartTime).getTime() - new Date(b.sessionStartTime).getTime()
+        ),
+    [races, series.seriesId]
+  );
 
   const positions = seriesRaces.map((r) => r.finishPositionInClass);
   const wins = seriesRaces.filter((r) => r.finishPositionInClass === 1).length;
   const discColor = DISC_COLORS[series.category as Discipline] ?? 'var(--v2-text-muted)';
   const discLabel = DISC_LABELS[series.category as Discipline] ?? series.category;
 
+  const activeWeek = weekResults.find((w) => w.status === 'active');
+  const nextUpcoming = weekResults.find((w) => w.status === 'upcoming');
+  const statusWeek = activeWeek ?? nextUpcoming ?? null;
+  const statusLabel = activeWeek ? 'Now' : nextUpcoming ? 'Next' : null;
+
+  const weeksRaced = weekResults.filter(
+    (w) => w.status === 'completed' || (w.status === 'active' && w.bestResult)
+  ).length;
+  const totalWeeks = weekResults.length || 12;
+
   return (
     <Link
       href={`/v2/series/${series.seriesId}`}
       className={`v2-series-row v2-fade-in-${Math.min(index + 1, 4)}`}
     >
-      {/* Category dot */}
-      <span
+      {/* Car image or discipline icon */}
+      <div
         style={{
-          width: 8,
-          height: 8,
-          borderRadius: '50%',
-          background: discColor,
+          width: 64,
+          height: 36,
+          borderRadius: 6,
+          overflow: 'hidden',
           flexShrink: 0,
+          background: 'var(--v2-surface-2)',
+          border: '1px solid var(--v2-border)',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
-      />
+      >
+        {carImageUrl ? (
+          <>
+            <Image
+              src={carImageUrl}
+              alt={series.carName || series.seriesName}
+              fill
+              unoptimized
+              sizes="64px"
+              style={{ objectFit: 'cover', objectPosition: 'center 40%', opacity: 0.85 }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: `linear-gradient(135deg, ${discColor}18 0%, transparent 60%)`,
+              }}
+            />
+          </>
+        ) : (
+          <DisciplineIcon category={series.category} color={discColor} />
+        )}
+      </div>
 
-      {/* Name + discipline */}
+      {/* Name + discipline + week status */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
@@ -436,11 +603,63 @@ function SeriesRow({
           {discLabel}
           {series.carName ? ` · ${series.carName}` : ''}
         </div>
+        {statusWeek && statusLabel && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5 }}>
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: activeWeek ? 'var(--v2-accent)' : 'var(--v2-text-muted)',
+                background: activeWeek ? 'rgba(197,241,49,0.1)' : 'var(--v2-surface-2)',
+                border: activeWeek
+                  ? '1px solid rgba(197,241,49,0.25)'
+                  : '1px solid var(--v2-border)',
+                borderRadius: 4,
+                padding: '1px 5px',
+              }}
+            >
+              {statusLabel}
+            </span>
+            <span style={{ fontSize: 10, color: 'var(--v2-text-muted)' }}>
+              Wk {statusWeek.displayWeek}
+              {statusWeek.schedule?.trackName
+                ? ` · ${statusWeek.schedule.trackName
+                    .replace(' International Speedway', '')
+                    .replace(' International Raceway', '')
+                    .replace(' Motor Speedway', '')
+                    .replace(' Motorsports Park', '')
+                    .replace(' Race Track', '')
+                    .replace(' Circuit', '')}`
+                : ''}
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Sparkline */}
-      <div style={{ flexShrink: 0 }}>
+      {/* Sparkline + week progress */}
+      <div
+        style={{
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: 4,
+        }}
+      >
         <Sparkline positions={positions} width={70} height={24} />
+        {weekResults.length > 0 && (
+          <div
+            style={{
+              fontSize: 9,
+              color: 'var(--v2-text-dim)',
+              fontFamily: 'var(--font-v2-mono, monospace)',
+            }}
+          >
+            {weeksRaced}/{totalWeeks} wks
+          </div>
+        )}
       </div>
 
       {/* Stats */}
@@ -467,7 +686,7 @@ function SeriesRow({
         </div>
         <div style={{ fontSize: 10, color: 'var(--v2-text-muted)' }}>
           {wins > 0 && <span style={{ color: 'var(--v2-accent)', marginRight: 4 }}>{wins}W</span>}
-          {series.racesEntered}R
+          {series.racesEntered}R{series.bestFinish ? ` · P${series.bestFinish} best` : ''}
         </div>
       </div>
 
@@ -493,13 +712,17 @@ function SeriesRow({
 
 // ── Recent race card ──────────────────────────────────────
 
-function RecentRaceCard({ race }: { race: RecentRace }) {
+function RecentRaceCard({ race, onClick }: { race: RecentRace; onClick: () => void }) {
   const delta = race.newIRating - race.oldIRating;
   const { text: deltaText, color: deltaColor } = irDeltaDisplay(delta);
   const pos = race.finishPositionInClass;
 
   return (
-    <div className="v2-race-card" style={{ minWidth: 200, maxWidth: 240, flexShrink: 0 }}>
+    <div
+      className="v2-race-card"
+      onClick={onClick}
+      style={{ minWidth: 200, maxWidth: 240, flexShrink: 0, cursor: 'pointer' }}
+    >
       {/* Position */}
       <div
         style={{
@@ -650,6 +873,9 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
   const { data: activeSeries, isLoading: isLoadingSeries } = useActiveSeries(customerId);
   const { data: driverData, setCustomerId } = useDriverData();
   const { races, isLoading: isLoadingRaces } = driverData;
+  const { data: carAssets } = useCarAssets();
+  const [selectedRace, setSelectedRace] = useState<RecentRace | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Sync customerId with DriverDataContext so race enrichment runs
   useEffect(() => {
@@ -871,9 +1097,20 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
             </div>
           ) : (
             <div>
-              {activeSeries.map((s, i) => (
-                <SeriesRow key={s.seriesId} series={s} races={races} index={i} />
-              ))}
+              {activeSeries.map((s, i) => {
+                const asset = s.carId ? carAssets?.[s.carId.toString()] : undefined;
+                const carImageUrl = getCarImageUrl(asset, 'small');
+                return (
+                  <SeriesRow
+                    key={s.seriesId}
+                    series={s}
+                    races={races}
+                    index={i}
+                    carImageUrl={carImageUrl}
+                    customerId={customerId!}
+                  />
+                );
+              })}
             </div>
           )}
         </section>
@@ -914,7 +1151,14 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
               }}
             >
               {recentFive.map((race) => (
-                <RecentRaceCard key={race.subsessionId} race={race} />
+                <RecentRaceCard
+                  key={race.subsessionId}
+                  race={race}
+                  onClick={() => {
+                    setSelectedRace(race);
+                    setModalOpen(true);
+                  }}
+                />
               ))}
             </div>
           )}
@@ -963,6 +1207,13 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
           .lg\\:pt-10 { padding-top: 2.5rem; }
         }
       `}</style>
+
+      <RaceDetailModal
+        race={selectedRace}
+        customerId={customerId}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 }

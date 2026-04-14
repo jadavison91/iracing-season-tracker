@@ -203,6 +203,33 @@
   animation: v2-pulse 1.6s ease-in-out infinite;
 }
 
+/* ── Mobile responsive ───────────────────────────────────── */
+
+@media (max-width: 640px) {
+  /* Generic hide utility */
+  .v2-hide-mobile {
+    display: none !important;
+  }
+
+  /* Opponents table: drop last-seen and tag columns, keep name + iRating + win-rate */
+  .v2-table-header,
+  .v2-table-row {
+    grid-template-columns: 1fr 80px 70px !important;
+  }
+
+  /* Series focus week rows: reduce padding */
+  .v2-week-row {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    gap: 8px !important;
+  }
+
+  /* Stat chips: allow wrapping on very narrow screens */
+  .v2-stat-chip {
+    min-width: 72px;
+  }
+}
+
 /* ── Fade-in entry animation ─────────────────────────────── */
 
 @keyframes v2-fade-up {

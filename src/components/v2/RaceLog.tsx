@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useDriverData, getDiscipline } from '@/contexts/DriverDataContext';
-import { RecentRace, formatLapTime } from '@/lib/iracing/types';
+import { RaceDetailModal } from '@/components/RaceDetailModal';
+import { RecentRace } from '@/lib/iracing/types';
 import { deriveSeasonLabel } from '@/lib/season-utils';
 
 // ── Constants ─────────────────────────────────────────────
@@ -36,10 +37,6 @@ function positionColor(pos: number): string {
   return 'var(--v2-text-muted)';
 }
 
-function formatMonthYear(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-}
-
 function formatShortDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
@@ -50,15 +47,7 @@ function irDelta(race: RecentRace): number | null {
 
 // ── Race card ─────────────────────────────────────────────
 
-function RaceCard({
-  race,
-  expanded,
-  onToggle,
-}: {
-  race: RecentRace;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
+function RaceCard({ race, onClick }: { race: RecentRace; onClick: () => void }) {
   const disc = getDiscipline(race);
   const accentColor = DISC_COLORS[disc] ?? 'var(--v2-text-muted)';
   const pos = race.finishPositionInClass;
@@ -75,31 +64,27 @@ function RaceCard({
 
   return (
     <div
-      onClick={onToggle}
+      onClick={onClick}
       style={{
         display: 'flex',
         alignItems: 'center',
         gap: 14,
         padding: '13px 16px',
         borderRadius: 10,
-        background: expanded ? 'var(--v2-surface-2)' : 'var(--v2-surface)',
-        borderTop: `1px solid ${expanded ? 'var(--v2-border-hi)' : 'var(--v2-border)'}`,
-        borderRight: `1px solid ${expanded ? 'var(--v2-border-hi)' : 'var(--v2-border)'}`,
-        borderBottom: `1px solid ${expanded ? 'var(--v2-border-hi)' : 'var(--v2-border)'}`,
+        background: 'var(--v2-surface)',
+        borderTop: '1px solid var(--v2-border)',
+        borderRight: '1px solid var(--v2-border)',
+        borderBottom: '1px solid var(--v2-border)',
         borderLeft: `3px solid ${accentColor}`,
         cursor: 'pointer',
         transition: 'background 0.12s, border-color 0.12s',
         userSelect: 'none',
       }}
       onMouseEnter={(e) => {
-        if (!expanded) {
-          (e.currentTarget as HTMLDivElement).style.background = 'var(--v2-surface-2)';
-        }
+        (e.currentTarget as HTMLDivElement).style.background = 'var(--v2-surface-2)';
       }}
       onMouseLeave={(e) => {
-        if (!expanded) {
-          (e.currentTarget as HTMLDivElement).style.background = 'var(--v2-surface)';
-        }
+        (e.currentTarget as HTMLDivElement).style.background = 'var(--v2-surface)';
       }}
     >
       {/* Position */}
@@ -116,7 +101,7 @@ function RaceCard({
       >
         <div style={{ fontSize: 28 }}>P{pos}</div>
         {race.numDrivers > 0 && (
-          <div style={{ fontSize: 9, color: 'var(--v2-text-dim)', marginTop: 2 }}>
+          <div style={{ fontSize: 9, color: 'var(--v2-text-muted)', marginTop: 2 }}>
             /{race.numDrivers}
           </div>
         )}
@@ -148,30 +133,6 @@ function RaceCard({
         >
           {race.seriesName}
         </div>
-
-        {/* Expanded detail row */}
-        {expanded && (
-          <div
-            style={{
-              marginTop: 8,
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '4px 16px',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <DetailPill label="Start" value={`P${race.startPositionInClass}`} />
-            {race.strengthOfField > 0 && (
-              <DetailPill label="SoF" value={race.strengthOfField.toLocaleString()} />
-            )}
-            {race.bestLapTime > 0 && (
-              <DetailPill label="Best Lap" value={formatLapTime(race.bestLapTime)} mono />
-            )}
-            {race.lapsComplete > 0 && <DetailPill label="Laps" value={race.lapsComplete} />}
-            {race.lapsLed > 0 && <DetailPill label="Led" value={race.lapsLed} accent />}
-            {race.champPoints > 0 && <DetailPill label="Pts" value={race.champPoints} />}
-          </div>
-        )}
       </div>
 
       {/* Right stats */}
@@ -215,58 +176,22 @@ function RaceCard({
         </div>
       </div>
 
-      {/* Expand chevron */}
+      {/* Open detail arrow */}
       <svg
         width={14}
         height={14}
         viewBox="0 0 14 14"
         fill="none"
         stroke="var(--v2-text-dim)"
-        style={{
-          flexShrink: 0,
-          transform: expanded ? 'rotate(180deg)' : 'rotate(0)',
-          transition: 'transform 0.15s',
-        }}
+        style={{ flexShrink: 0 }}
       >
-        <path d="M3 5l4 4 4-4" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M3 7h8M7 3l4 4-4 4"
+          strokeWidth={1.3}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
-    </div>
-  );
-}
-
-function DetailPill({
-  label,
-  value,
-  mono,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  mono?: boolean;
-  accent?: boolean;
-}) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-      <span
-        style={{
-          fontSize: 10,
-          color: 'var(--v2-text-dim)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-        }}
-      >
-        {label}
-      </span>
-      <span
-        style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: accent ? 'var(--v2-accent)' : 'var(--v2-text-muted)',
-          fontFamily: mono ? 'var(--font-v2-mono, monospace)' : 'inherit',
-        }}
-      >
-        {value}
-      </span>
     </div>
   );
 }
@@ -521,7 +446,8 @@ export function RaceLog({ customerId }: RaceLogProps) {
   const [discipline, setDiscipline] = useState<Discipline>('all');
   const [selectedSeason, setSelectedSeason] = useState<string>('all');
   const [search, setSearch] = useState('');
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [selectedRace, setSelectedRace] = useState<RecentRace | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     setCustomerId(customerId);
@@ -843,10 +769,10 @@ export function RaceLog({ customerId }: RaceLogProps) {
                     <RaceCard
                       key={race.subsessionId}
                       race={race}
-                      expanded={expandedId === race.subsessionId}
-                      onToggle={() =>
-                        setExpandedId(expandedId === race.subsessionId ? null : race.subsessionId)
-                      }
+                      onClick={() => {
+                        setSelectedRace(race);
+                        setModalOpen(true);
+                      }}
                     />
                   ))}
                 </div>
@@ -855,6 +781,13 @@ export function RaceLog({ customerId }: RaceLogProps) {
           )}
         </div>
       </div>
+
+      <RaceDetailModal
+        race={selectedRace}
+        customerId={customerId}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 }
