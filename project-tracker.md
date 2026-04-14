@@ -238,6 +238,43 @@ Discipline labels derived via `deriveDiscipline()` (mirrors `getDiscipline` logi
 
 ---
 
+### Phase 4 — V2 Redesign ("Pitwall")
+
+**Status: Complete**
+
+Full redesign of the UI under `/v2/*`. All existing routes and API endpoints remain untouched. `/` now redirects to `/v2`. Design spec: `v2-design.md`.
+
+**Aesthetic**: Dark-first, electric lime (`#C5F131`) accent on near-black (`#09090E`). Fonts: Syne (display) + JetBrains Mono (data values). Left rail navigation on desktop, bottom tab bar on mobile.
+
+**Core principle**: Charts and race data woven organically into the season narrative — no separate Charts page.
+
+#### Pages
+
+| Route                   | Name         | Status | Description                                                                                 |
+| ----------------------- | ------------ | ------ | ------------------------------------------------------------------------------------------- |
+| `/v2`                   | Season HQ    | ✓      | Driver hero + iRating chart + series rows with sparklines, Now/Next badge, week progress    |
+| `/v2/races`             | Race Log     | ✓      | Month-grouped timeline, discipline filter pills on mobile / sidebar on desktop, race modals |
+| `/v2/series/[seriesId]` | Series Focus | ✓      | Championship hero, 12-week schedule (all statuses), embedded analysis charts                |
+| `/v2/rivals`            | Rivals       | ✓      | Tagged rivals grid, all-opponents table, click-to-expand series breakdown, tag picker       |
+
+#### Key implementation notes
+
+- `V2Shell` — left rail (≥1024px) with driver switcher, settings, refresh; bottom tab bar (<1024px)
+- `SeasonHQ` series rows call `useSeriesSchedule` per series to show active/upcoming track inline
+- `SeriesFocus` embeds 6 analysis charts (track performance, best laps, learning curve, positions gained, SoF, incident trend) from `/charts`, filtered to the series
+- Rivals dropdown cross-references fresh `races` array to backfill `seriesName`/`carName` for old localStorage encounters that predate the schema addition
+- Mobile: `v2-hide-mobile` CSS utility hides non-essential columns (iR delta, incidents on week rows; last seen + tag on opponents table) at ≤640px
+- `Encounter` type extended with `seriesName` and `carName`; `mergeDriverGrid` updated accordingly
+
+#### Remaining / polish
+
+- [ ] Loading skeletons for Series Focus hero/stats while schedule loads
+- [ ] Empty state for Series Focus when no races have been run yet
+- [ ] `/v2/test` preview page can be removed once series row design is confirmed
+- [ ] Confirm all v1 features are covered, then retire v1 routes and HTML file
+
+---
+
 ## Known Limitations / Gotchas
 
 - **iRating enrichment is slow on first load.** Each race requires a separate subsession API call. With 30+ races, this takes 30+ seconds on first fetch (rate limiter: 1 req/sec). The 2-hour localStorage cache (`iracing-v3-ng-races`) eliminates repeat fetches. Progress display would still help for cold loads.
