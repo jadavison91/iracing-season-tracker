@@ -41,18 +41,6 @@ export function useActiveSeries(customerId: number | null) {
   const activeSeries = useMemo(() => {
     if (!races || races.length === 0) return [];
 
-    // Determine when the current iRacing season started by finding the most
-    // recent race with raceWeekNum === 0 (first week of a season) across all series.
-    // All series share the same season calendar, so this gives us the season boundary.
-    const weekZeroRaces = races.filter((r) => r.raceWeekNum === 0);
-    const currentSeasonStart =
-      weekZeroRaces.length > 0
-        ? weekZeroRaces.reduce((latest, r) => {
-            const d = new Date(r.sessionStartTime);
-            return d > latest ? d : latest;
-          }, new Date(0))
-        : null;
-
     // Group races by series
     const seriesMap = new Map<number, typeof races>();
     races.forEach((race) => {
@@ -72,15 +60,14 @@ export function useActiveSeries(customerId: number | null) {
       const maxSeasonId = Math.max(...allSeriesRaces.map((r) => r.seasonId));
       const seriesRaces = allSeriesRaces.filter((r) => r.seasonId === maxSeasonId);
 
-      // Skip this series if all its races pre-date the current season start.
-      // This excludes series the driver only raced in the previous season.
-      if (currentSeasonStart) {
-        const hasCurrentSeasonRace = seriesRaces.some(
-          (r) => new Date(r.sessionStartTime) >= currentSeasonStart!
-        );
-        if (!hasCurrentSeasonRace) return;
-      }
-
+      // Races from /season-races are already scoped server-side to the
+      // current active season_year/season_quarter (see season-races/route.ts),
+      // and maxSeasonId above keeps only each series' most recent season, so
+      // no extra date-based cutoff is needed here. (A prior heuristic tried
+      // to infer the season boundary from raceWeekNum === 0 races, but it
+      // silently stopped filtering anything whenever the driver hadn't yet
+      // completed a week-0 race in the new season, which is exactly what
+      // let stale series from the previous season keep showing up.)
       const firstRace = seriesRaces[0];
       // Safety check for missing seriesName
       if (!firstRace || !firstRace.seriesName) {

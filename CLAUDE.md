@@ -59,15 +59,16 @@ NEXT_PUBLIC_USE_MOCK_DATA=true  # opt-in mock data for development without crede
 
 ### iRacing Season Structure
 - All series follow the same fixed season calendar: **12 racing weeks + 1 "week 13"** fun week
-- iRacing season numbering does **not** align with calendar quarters — do not try to derive `season_year`/`season_quarter` from the current date
-- The `/api/driver/[customerId]/season-races` route automatically resolves the current season by calling `getSeriesSeasons()` and finding the first `active: true` record — no date math needed
-- Active season result is cached in-memory for 1 hour in the route handler
+- iRacing season numbering does **not** align with calendar quarters — do not assume a fixed month→quarter mapping (e.g. "Jan–Mar = S1") and use it to derive `season_year`/`season_quarter` from today's date
+- A season row's `active` flag means "this series is currently being run at all" — it does **not** mean "this row is the current quarter." A series can stay `active: true` across a season rollover while its previous-quarter row is still present in `getSeriesSeasons()`'s response, so filtering on `active` can silently pin the app to a stale season
+- The `/api/driver/[customerId]/season-races` route resolves the current season by checking each season row's own `schedules[].start_date` (each week runs 7 days from its start date) against today's date, and using the row whose week window contains "now" — this is real schedule data, not a guess, so it's safe even though season numbering doesn't align with calendar quarters
+- The resolved season is cached in-memory for 1 hour in the route handler
 - Do **not** filter by `seasonId` across series — each series has its own season ID, so this would drop races from all but one series
 - Do **not** use date ranges with `results/search_series` — the iRacing API rejects dates outside the current season window
 
 ### Season Races API Flow
 1. Client calls `/api/driver/[customerId]/season-races` (no params needed)
-2. Server calls `getSeriesSeasons()`, finds `active: true` season, reads `season_year` + `season_quarter`
+2. Server calls `getSeriesSeasons()`, finds the season row whose `schedules[].start_date` window contains today (see `isSeasonCurrent` in the route), reads `season_year` + `season_quarter` from it
 3. Server calls `searchMemberResults(custId, seasonYear, seasonQuarter)`
 4. Results returned as `{ races: [...] }`
 
@@ -90,7 +91,7 @@ src/
 │   │   ├── driver/[customerId]/
 │   │   │   ├── irating-history/
 │   │   │   ├── recent-races/
-│   │   │   ├── season-races/   # Resolves active season automatically
+│   │   │   ├── season-races/   # Resolves current season automatically (via schedule dates)
 │   │   │   └── summary/
 │   │   ├── series/[seriesId]/schedule/
 │   │   ├── subsession/[subsessionId]/
@@ -120,6 +121,6 @@ src/
 - `results/search_series` returns chunked results — all chunks must be fetched and concatenated
 - `results/search_series` uses `season_year` + `season_quarter` params (not date ranges)
 - `results/search_series` rejects `start_range_begin` dates outside the current season window
-- `/series/seasons` returns all series seasons; filter client-side for `active: true`
+- `/series/seasons` returns every season row for every series (current and historical) in one array — filter client-side by `series_id` and/or by checking each row's `schedules[].start_date` against today's date; the `active` flag does not reliably indicate "this row is the current quarter"
 - Rate limit: 1 request/second (enforced in `client.ts`)
 - Auth errors (401) are handled separately from API errors and trigger token refresh

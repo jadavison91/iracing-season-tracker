@@ -1,8 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchMemberResults, getSeriesSeasons, IRacingApiError, IRacingAuthError } from '@/lib/iracing';
 
-// Cache active season for 1 hour — it only changes 4 times a year
+// Cache the current season for 1 hour — it only changes 4 times a year
 let cachedSeason: { seasonYear: number; seasonQuarter: number; expiresAt: number } | null = null;
+
+/**
+ * True when `now` falls inside one of this season row's race weeks. Each
+ * week runs 7 days from its `start_date`, and the season's overall window
+ * runs from the first week's start through the last week's end (12 racing
+ * weeks + the "week 13" fun week).
+ */
+function isSeasonCurrent(season: Record<string, unknown>, now: Date): boolean {
+  const schedules = season.schedules as Record<string, unknown>[] | undefined;
+  if (!schedules || schedules.length === 0) return false;
+
+  return schedules.some((week) => {
+    const startDateStr = week.start_date as string | undefined;
+    if (!startDateStr) return false;
+    const start = new Date(startDateStr);
+    if (isNaN(start.getTime())) return false;
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return now >= start && now < end;
+  });
+}
 
 async function getActiveSeasonYearAndQuarter(): Promise<{ seasonYear: number; seasonQuarter: number }> {
   if (cachedSeason && Date.now() < cachedSeason.expiresAt) {
@@ -10,14 +31,36 @@ async function getActiveSeasonYearAndQuarter(): Promise<{ seasonYear: number; se
   }
 
   const seasons = await getSeriesSeasons();
-  const active = seasons.find((s) => s.active === true);
-  if (!active) throw new Error('No active iRacing season found');
+  const now = new Date();
+
+  // `active` on a season row means "this series is currently being run at
+  // all" — it is not a reliable signal for "this row is the season
+  // happening right now." A series can stay active: true across a season
+  // rollover while its previous-quarter row is still sitting in the list,
+  // which is what let the app get pinned to a stale season. The only
+  // trustworthy signal for "which season are we in" is each row's own week
+  // schedule: check it against today's date directly.
+  const currentSeasons = seasons.filter((s) => isSeasonCurrent(s, now));
+
+  if (currentSeasons.length === 0) {
+    throw new Error('Could not determine the current iRacing season from any season schedule');
+  }
+
+  // All series share the same season calendar, so every matching row should
+  // agree on season_year/season_quarter. If any don't (e.g. a schedule
+  // published out of step), prefer the highest (year, quarter) pair, since
+  // the current season is always the most recently started one.
+  const active = currentSeasons.reduce((latest, s) => {
+    const latestKey = Number(latest.season_year) * 10 + Number(latest.season_quarter);
+    const key = Number(s.season_year) * 10 + Number(s.season_quarter);
+    return key > latestKey ? s : latest;
+  });
 
   const seasonYear = Number(active.season_year);
   const seasonQuarter = Number(active.season_quarter);
 
   cachedSeason = { seasonYear, seasonQuarter, expiresAt: Date.now() + 60 * 60 * 1000 };
-  console.log(`[season-races] Active season: ${seasonYear} S${seasonQuarter}`);
+  console.log(`[season-races] Current season: ${seasonYear} S${seasonQuarter}`);
 
   return { seasonYear, seasonQuarter };
 }
