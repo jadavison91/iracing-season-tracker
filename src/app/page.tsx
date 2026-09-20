@@ -1,12 +1,8 @@
 'use client';
 
-import { AppShell } from '@/components/AppShell';
-import { Dashboard } from '@/components/Dashboard';
+import { V2Shell } from '@/components/v2/V2Shell';
+import { SeasonHQ } from '@/components/v2/SeasonHQ';
 
 export default function Home() {
-  return (
-    <AppShell>
-      {(customerId) => <Dashboard customerId={customerId} />}
-    </AppShell>
-  );
+  return <V2Shell>{(customerId) => <SeasonHQ customerId={customerId} />}</V2Shell>;
 }

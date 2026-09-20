@@ -673,7 +673,7 @@ export function SeriesFocus({ customerId, seriesId }: SeriesFocusProps) {
     return (
       <div style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--v2-text-muted)' }}>
         No race data found for this series.{' '}
-        <Link href="/v2" style={{ color: 'var(--v2-accent)' }}>
+        <Link href="/" style={{ color: 'var(--v2-accent)' }}>
           Back to Season HQ
         </Link>
       </div>
@@ -758,7 +758,7 @@ export function SeriesFocus({ customerId, seriesId }: SeriesFocusProps) {
 
         {/* Back nav — top left */}
         <Link
-          href="/v2"
+          href="/"
           style={{
             position: 'absolute',
             top: 16,

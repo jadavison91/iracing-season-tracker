@@ -1,20 +1,20 @@
 'use client';
 
 import { use } from 'react';
-import { AppShell } from '@/components/AppShell';
-import { SeriesDetail } from '@/components/SeriesDetail';
+import { V2Shell } from '@/components/v2/V2Shell';
+import { SeriesFocus } from '@/components/v2/SeriesFocus';
 
-interface SeriesPageProps {
+interface SeriesFocusPageProps {
   params: Promise<{ seriesId: string }>;
 }
 
-export default function SeriesPage({ params }: SeriesPageProps) {
+export default function SeriesFocusPage({ params }: SeriesFocusPageProps) {
   const { seriesId } = use(params);
   const seriesIdNum = parseInt(seriesId, 10);
 
   return (
-    <AppShell>
-      {(customerId) => <SeriesDetail customerId={customerId} seriesId={seriesIdNum} />}
-    </AppShell>
+    <V2Shell>
+      {(customerId) => <SeriesFocus customerId={customerId} seriesId={seriesIdNum} />}
+    </V2Shell>
   );
 }

@@ -607,9 +607,9 @@ export function V2Shell({ children }: V2ShellProps) {
   }
 
   const navItems = [
-    { href: '/v2', label: 'Season HQ', icon: <HQIcon /> },
-    { href: '/v2/races', label: 'Races', icon: <RacesIcon /> },
-    { href: '/v2/rivals', label: 'Rivals', icon: <RivalsIcon /> },
+    { href: '/', label: 'Season HQ', icon: <HQIcon /> },
+    { href: '/races', label: 'Races', icon: <RacesIcon /> },
+    { href: '/rivals', label: 'Rivals', icon: <RivalsIcon /> },
   ];
 
   return (
@@ -641,7 +641,7 @@ export function V2Shell({ children }: V2ShellProps) {
               borderBottom: '1px solid var(--v2-border)',
             }}
           >
-            <Link href="/v2" style={{ textDecoration: 'none' }}>
+            <Link href="/" style={{ textDecoration: 'none' }}>
               <span
                 style={{
                   fontSize: 15,
@@ -678,39 +678,6 @@ export function V2Shell({ children }: V2ShellProps) {
                 {item.label}
               </Link>
             ))}
-
-            {/* Old site link */}
-            <div
-              style={{
-                margin: '20px 0 8px',
-                borderTop: '1px solid var(--v2-border)',
-                paddingTop: 12,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 10,
-                  color: 'var(--v2-text-dim)',
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  marginBottom: 6,
-                  paddingLeft: 12,
-                }}
-              >
-                Classic
-              </div>
-              <Link href="/" className="v2-nav-link" style={{ fontSize: 12, opacity: 0.7 }}>
-                <svg width={14} height={14} viewBox="0 0 14 14" fill="none" stroke="currentColor">
-                  <path
-                    d="M2 7h10M7 2l5 5-5 5"
-                    strokeWidth={1.4}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Back to v1
-              </Link>
-            </div>
           </nav>
 
           {/* Bottom: driver + controls */}
@@ -748,7 +715,7 @@ export function V2Shell({ children }: V2ShellProps) {
 
         {/* ── Bottom tab bar (mobile only) ── */}
         <nav
-          className="lg:hidden"
+          className="flex lg:hidden"
           style={{
             position: 'fixed',
             bottom: 0,
@@ -757,7 +724,6 @@ export function V2Shell({ children }: V2ShellProps) {
             height: 64,
             background: 'var(--v2-surface)',
             borderTop: '1px solid var(--v2-border)',
-            display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-around',
             zIndex: 50,

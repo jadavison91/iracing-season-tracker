@@ -1,8 +1,8 @@
 'use client';
 
-import { AppShell } from '@/components/AppShell';
-import { RacesView } from '@/components/RacesView';
+import { V2Shell } from '@/components/v2/V2Shell';
+import { RaceLog } from '@/components/v2/RaceLog';
 
 export default function RacesPage() {
-  return <AppShell>{(customerId) => <RacesView customerId={customerId} />}</AppShell>;
+  return <V2Shell>{(customerId) => <RaceLog customerId={customerId} />}</V2Shell>;
 }

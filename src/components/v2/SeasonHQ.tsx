@@ -536,7 +536,7 @@ function SeriesRow({
 
   return (
     <Link
-      href={`/v2/series/${series.seriesId}`}
+      href={`/series/${series.seriesId}`}
       className={`v2-series-row v2-fade-in-${Math.min(index + 1, 4)}`}
     >
       {/* Car image or discipline icon */}
@@ -1165,7 +1165,7 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
 
           {recentFive.length > 0 && (
             <Link
-              href="/v2/races"
+              href="/races"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
