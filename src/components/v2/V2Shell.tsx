@@ -94,7 +94,7 @@ function RailDriverSection({
           padding: '10px 12px',
           borderRadius: 8,
           background: 'var(--v2-accent-glow)',
-          border: '1px solid rgba(197,241,49,0.2)',
+          border: '1px solid rgba(59,130,246,0.2)',
           color: 'var(--v2-accent)',
           fontSize: 12,
           fontWeight: 600,

@@ -24,7 +24,10 @@ function toNumber(value: unknown, fallback = 0): number {
 /**
  * Transform iRacing API race data (snake_case) to our format (camelCase)
  */
-function transformRace(raw: Record<string, unknown>): RecentRace {
+function transformRace(
+  raw: Record<string, unknown>,
+  seasonMeta?: { seasonYear: number; seasonQuarter: number }
+): RecentRace {
   // Handle nested track object if present
   const track = raw.track as Record<string, unknown> | undefined;
 
@@ -84,6 +87,8 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
       (raw.winner_cust_id ?? raw.winnerCustId)
         ? toNumber(raw.winner_cust_id ?? raw.winnerCustId)
         : undefined,
+    seasonYear: seasonMeta?.seasonYear,
+    seasonQuarter: seasonMeta?.seasonQuarter,
   };
 }
 
@@ -293,7 +298,11 @@ async function fetchAllDriverRaces(
     }
     const seasonData = await seasonResponse.json();
     const rawRaces: Record<string, unknown>[] = seasonData.races || [];
-    const freshRaces = rawRaces.map(transformRace);
+    const seasonMeta =
+      typeof seasonData.seasonYear === 'number' && typeof seasonData.seasonQuarter === 'number'
+        ? { seasonYear: seasonData.seasonYear, seasonQuarter: seasonData.seasonQuarter }
+        : undefined;
+    const freshRaces = rawRaces.map((raw) => transformRace(raw, seasonMeta));
 
     let mergedRaces: RecentRace[];
 

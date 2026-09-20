@@ -20,8 +20,8 @@ const DISC_OPTIONS: { value: Discipline; label: string }[] = [
 ];
 
 const DISC_COLORS: Record<string, string> = {
-  road: '#C5F131',
-  sports_car: '#C5F131',
+  road: '#3B82F6',
+  sports_car: '#3B82F6',
   formula: '#60A5FA',
   oval: '#FBBF24',
   dirt_oval: '#A78BFA',
@@ -454,7 +454,7 @@ export function RaceLog({ customerId }: RaceLogProps) {
   }, [customerId, setCustomerId]);
 
   // Season labels
-  const raceLabels = useMemo(() => races.map((r) => deriveSeasonLabel(r.seasonId, [r])), [races]);
+  const raceLabels = useMemo(() => races.map((r) => deriveSeasonLabel(r)), [races]);
 
   const seasonOptions = useMemo((): { label: string; value: string }[] => {
     const labels = [...new Set(raceLabels)].sort((a, b) => {

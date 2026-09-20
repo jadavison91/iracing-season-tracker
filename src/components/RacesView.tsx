@@ -100,7 +100,7 @@ export function RacesView({ customerId }: RacesViewProps) {
 
   // Each race gets a label like "S1 2026". Group by label since different series
   // have different seasonId values for the same calendar season period.
-  const raceLabels = useMemo(() => races.map((r) => deriveSeasonLabel(r.seasonId, [r])), [races]);
+  const raceLabels = useMemo(() => races.map((r) => deriveSeasonLabel(r)), [races]);
 
   // Unique season labels sorted newest-first (S4 2025, S1 2026, …)
   const seasonOptions = useMemo((): SeasonOption[] => {

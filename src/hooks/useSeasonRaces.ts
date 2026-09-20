@@ -16,7 +16,10 @@ function toNumber(value: unknown, fallback = 0): number {
 /**
  * Transform iRacing API race data (snake_case) to our format (camelCase)
  */
-function transformRace(raw: Record<string, unknown>): RecentRace {
+function transformRace(
+  raw: Record<string, unknown>,
+  seasonMeta?: { seasonYear: number; seasonQuarter: number }
+): RecentRace {
   // Handle nested track object if present
   const track = raw.track as Record<string, unknown> | undefined;
 
@@ -77,6 +80,8 @@ function transformRace(raw: Record<string, unknown>): RecentRace {
       (raw.winner_cust_id ?? raw.winnerCustId)
         ? toNumber(raw.winner_cust_id ?? raw.winnerCustId)
         : undefined,
+    seasonYear: seasonMeta?.seasonYear,
+    seasonQuarter: seasonMeta?.seasonQuarter,
   };
 }
 
@@ -109,7 +114,11 @@ async function fetchSeasonRaces(customerId: number): Promise<RecentRace[]> {
   console.log('[useSeasonRaces] Raw races from API:', racesArray.length);
 
   // Transform the races from snake_case to camelCase
-  const races = racesArray.map((raw: Record<string, unknown>) => transformRace(raw));
+  const seasonMeta =
+    typeof data.seasonYear === 'number' && typeof data.seasonQuarter === 'number'
+      ? { seasonYear: data.seasonYear, seasonQuarter: data.seasonQuarter }
+      : undefined;
+  const races = racesArray.map((raw: Record<string, unknown>) => transformRace(raw, seasonMeta));
 
   // Sort by session start time (newest first)
   races.sort(

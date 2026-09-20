@@ -80,7 +80,7 @@ function SeasonWeekRow({
   );
 
   const rowBg = isActive
-    ? 'rgba(197,241,49,0.04)'
+    ? 'rgba(59,130,246,0.04)'
     : isUpcoming || isSkipped
       ? 'transparent'
       : 'transparent';
@@ -88,7 +88,7 @@ function SeasonWeekRow({
   const leftBorder = isCounting
     ? '2px solid var(--v2-accent)'
     : isActive
-      ? '2px solid rgba(197,241,49,0.4)'
+      ? '2px solid rgba(59,130,246,0.4)'
       : '2px solid transparent';
 
   return (
@@ -325,7 +325,7 @@ function FinishDot(props: { cx?: number; cy?: number; payload?: { pos: number } 
   const { cx, cy, payload } = props;
   if (cx === undefined || cy === undefined || !payload) return null;
   const color =
-    payload.pos === 1 ? 'var(--v2-accent)' : payload.pos <= 3 ? '#FBBF24' : 'rgba(197,241,49,0.3)';
+    payload.pos === 1 ? 'var(--v2-accent)' : payload.pos <= 3 ? '#FBBF24' : 'rgba(59,130,246,0.3)';
   return <circle cx={cx} cy={cy} r={payload.pos <= 3 ? 4 : 3} fill={color} stroke="none" />;
 }
 
@@ -407,14 +407,14 @@ function FinishTrendChart({ races }: { races: RecentRace[] }) {
         <Tooltip content={<FinishTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.06)' }} />
         <ReferenceLine
           y={1}
-          stroke="rgba(197,241,49,0.15)"
+          stroke="rgba(59,130,246,0.15)"
           strokeDasharray="4 4"
           label={{ value: 'P1', position: 'right', fontSize: 9, fill: 'var(--v2-accent)' }}
         />
         <Line
           type="monotone"
           dataKey="pos"
-          stroke="rgba(197,241,49,0.5)"
+          stroke="rgba(59,130,246,0.5)"
           strokeWidth={1.5}
           dot={<FinishDot />}
           activeDot={{ r: 5, fill: 'var(--v2-accent)' }}
@@ -732,7 +732,7 @@ export function SeriesFocus({ customerId, seriesId }: SeriesFocusProps) {
               position: 'absolute',
               inset: 0,
               backgroundImage:
-                'linear-gradient(rgba(197,241,49,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(197,241,49,0.03) 1px, transparent 1px)',
+                'linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px)',
               backgroundSize: '40px 40px',
             }}
           />

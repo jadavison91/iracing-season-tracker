@@ -103,8 +103,8 @@ const TAG_STYLES: Record<
 // ── Category dot ──────────────────────────────────────────
 
 const CAT_COLORS: Record<string, string> = {
-  road: '#C5F131',
-  sports_car: '#C5F131',
+  road: '#3B82F6',
+  sports_car: '#3B82F6',
   formula: '#60A5FA',
   oval: '#FBBF24',
   dirt_oval: '#A78BFA',

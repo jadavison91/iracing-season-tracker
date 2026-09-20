@@ -27,8 +27,8 @@ type Discipline = 'road' | 'formula' | 'oval' | 'dirt_oval' | 'dirt_road' | 'spo
 // ── Constants ─────────────────────────────────────────────
 
 const DISC_COLORS: Record<string, string> = {
-  road: '#C5F131',
-  sports_car: '#C5F131',
+  road: '#3B82F6',
+  sports_car: '#3B82F6',
   formula: '#60A5FA',
   oval: '#FBBF24',
   dirt_oval: '#A78BFA',
@@ -127,7 +127,7 @@ function Sparkline({
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} overflow="visible">
       <polyline
         points={pointsStr}
-        stroke="rgba(197,241,49,0.35)"
+        stroke="rgba(59,130,246,0.35)"
         strokeWidth={1.5}
         fill="none"
         strokeLinejoin="round"
@@ -139,7 +139,7 @@ function Sparkline({
           cx={p.x}
           cy={p.y}
           r={i === pts.length - 1 ? 2.5 : 1.5}
-          fill={i === pts.length - 1 ? '#C5F131' : 'rgba(197,241,49,0.5)'}
+          fill={i === pts.length - 1 ? '#3B82F6' : 'rgba(59,130,246,0.5)'}
         />
       ))}
       {/* Invisible hover area */}
@@ -612,9 +612,9 @@ function SeriesRow({
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
                 color: activeWeek ? 'var(--v2-accent)' : 'var(--v2-text-muted)',
-                background: activeWeek ? 'rgba(197,241,49,0.1)' : 'var(--v2-surface-2)',
+                background: activeWeek ? 'rgba(59,130,246,0.1)' : 'var(--v2-surface-2)',
                 border: activeWeek
-                  ? '1px solid rgba(197,241,49,0.25)'
+                  ? '1px solid rgba(59,130,246,0.25)'
                   : '1px solid var(--v2-border)',
                 borderRadius: 4,
                 padding: '1px 5px',
@@ -819,7 +819,7 @@ function NullState() {
           height: 64,
           borderRadius: '50%',
           background: 'var(--v2-accent-glow)',
-          border: '2px solid rgba(197,241,49,0.2)',
+          border: '2px solid rgba(59,130,246,0.2)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

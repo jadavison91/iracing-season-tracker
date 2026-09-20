@@ -86,8 +86,10 @@ export async function GET(
     // Debug log
     console.log('[API /season-races] Returning', result.results?.length || 0, 'races');
 
-    // Return in a format the hook expects
-    return NextResponse.json({ races: result.results || [] });
+    // Return the resolved season alongside the races so callers can stamp it
+    // onto each race directly instead of re-guessing the season from its
+    // date client-side (see deriveSeasonLabel in season-utils.ts).
+    return NextResponse.json({ races: result.results || [], seasonYear, seasonQuarter });
   } catch (error) {
     console.error('Error fetching season races:', error);
 

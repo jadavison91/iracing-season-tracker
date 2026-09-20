@@ -95,6 +95,16 @@ export interface RecentRace {
   numDrivers: number;
   winnerName?: string;
   winnerCustId?: number;
+  /**
+   * The real season_year/season_quarter the server resolved when this race
+   * was fetched (see season-races/route.ts, which derives it from iRacing's
+   * actual season schedule rather than the calendar). Only present on races
+   * fetched after this field was added — older cached races won't have it,
+   * so consumers should fall back to a best-effort guess from the date (see
+   * deriveSeasonLabel in season-utils.ts).
+   */
+  seasonYear?: number;
+  seasonQuarter?: number;
 }
 
 export interface RaceResult {

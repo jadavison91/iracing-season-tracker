@@ -14,10 +14,10 @@
   --v2-border: rgba(255, 255, 255, 0.07);
   --v2-border-hi: rgba(255, 255, 255, 0.14);
 
-  /* Accent — electric lime */
-  --v2-accent: #c5f131;
-  --v2-accent-glow: rgba(197, 241, 49, 0.12);
-  --v2-accent-dim: rgba(197, 241, 49, 0.4);
+  /* Accent — electric blue */
+  --v2-accent: #3b82f6;
+  --v2-accent-glow: rgba(59, 130, 246, 0.12);
+  --v2-accent-dim: rgba(59, 130, 246, 0.4);
 
   /* Text */
   --v2-text: #f0f0f2;
@@ -30,12 +30,12 @@
   --v2-warning: #fbbf24;
 
   /* Discipline colors */
-  --disc-road: #c5f131;
+  --disc-road: #3b82f6;
   --disc-formula: #60a5fa;
   --disc-oval: #fbbf24;
   --disc-dirt_oval: #a78bfa;
   --disc-dirt_road: #34d399;
-  --disc-sports_car: #c5f131;
+  --disc-sports_car: #3b82f6;
 
   /* Typography */
   font-family: var(--font-v2-sans, system-ui, sans-serif);

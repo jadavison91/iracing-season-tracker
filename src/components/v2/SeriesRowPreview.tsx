@@ -12,8 +12,8 @@ import { RecentRace, WeekResult } from '@/lib/iracing/types';
 // ── Shared helpers & constants ────────────────────────────
 
 const DISC_COLORS: Record<string, string> = {
-  road: '#C5F131',
-  sports_car: '#C5F131',
+  road: '#3B82F6',
+  sports_car: '#3B82F6',
   formula: '#60A5FA',
   oval: '#FBBF24',
   dirt_oval: '#A78BFA',
@@ -68,7 +68,7 @@ function Sparkline({ positions }: { positions: number[] }) {
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} overflow="visible">
       <polyline
         points={pointsStr}
-        stroke="rgba(197,241,49,0.35)"
+        stroke="rgba(59,130,246,0.35)"
         strokeWidth={1.5}
         fill="none"
         strokeLinejoin="round"
@@ -80,10 +80,10 @@ function Sparkline({ positions }: { positions: number[] }) {
           cx={p.x}
           cy={p.y}
           r={i === pts.length - 1 ? 3 : 2}
-          fill={i === pts.length - 1 ? 'var(--v2-accent)' : 'rgba(197,241,49,0.4)'}
+          fill={i === pts.length - 1 ? 'var(--v2-accent)' : 'rgba(59,130,246,0.4)'}
         />
       ))}
-      <circle cx={last.x} cy={last.y} r={5} fill="rgba(197,241,49,0.15)" />
+      <circle cx={last.x} cy={last.y} r={5} fill="rgba(59,130,246,0.15)" />
     </svg>
   );
 }
@@ -310,9 +310,9 @@ function ProposedSeriesRow({
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
                 color: activeWeek ? 'var(--v2-accent)' : 'var(--v2-text-dim)',
-                background: activeWeek ? 'rgba(197,241,49,0.1)' : 'var(--v2-surface-2)',
+                background: activeWeek ? 'rgba(59,130,246,0.1)' : 'var(--v2-surface-2)',
                 border: activeWeek
-                  ? '1px solid rgba(197,241,49,0.25)'
+                  ? '1px solid rgba(59,130,246,0.25)'
                   : '1px solid var(--v2-border)',
                 borderRadius: 4,
                 padding: '1px 5px',
