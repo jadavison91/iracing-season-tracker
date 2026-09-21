@@ -886,7 +886,29 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
 
   const seasonRaces = useMemo(() => {
     if (!races.length) return [];
-    return [...races].sort(
+
+    // driverData.races is a lifetime cache that accumulates every race ever
+    // synced to this browser across every past season (see race-cache.ts) —
+    // it does NOT stop at the current season on its own. Scope it down using
+    // the real season_year/season_quarter the server resolved when each race
+    // was fetched (see season-races/route.ts), taking whichever season is
+    // highest since that's always the most recently started one.
+    //
+    // Races cached before that field existed won't have it. If NONE of the
+    // cached races are tagged yet (the cache hasn't refreshed since this was
+    // added), fall back to the full history rather than showing an empty
+    // chart until the next sync — pull the refresh button to populate tags
+    // immediately.
+    const withSeason = races.filter((r) => r.seasonYear != null && r.seasonQuarter != null);
+    let pool = races;
+    if (withSeason.length > 0) {
+      const currentKey = Math.max(
+        ...withSeason.map((r) => r.seasonYear! * 10 + r.seasonQuarter!)
+      );
+      pool = withSeason.filter((r) => r.seasonYear! * 10 + r.seasonQuarter! === currentKey);
+    }
+
+    return [...pool].sort(
       (a, b) => new Date(b.sessionStartTime).getTime() - new Date(a.sessionStartTime).getTime()
     );
   }, [races]);
@@ -1013,7 +1035,7 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
         )}
 
         {/* iRating chart */}
-        <IRatingHeroChart races={races} isLoading={isLoadingRaces} />
+        <IRatingHeroChart races={seasonRaces} isLoading={isLoadingRaces} />
 
         {/* Stat chips */}
         <div
