@@ -12,7 +12,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { useDriverSummary } from '@/hooks';
+import { useDriverSummary, useSeasonRaces } from '@/hooks';
 import { useActiveSeries } from '@/hooks/useActiveSeries';
 import { useDriverData, getDiscipline } from '@/contexts/DriverDataContext';
 import { useCarAssets, getCarImageUrl } from '@/hooks/useCarAssets';
@@ -871,8 +871,12 @@ interface SeasonHQProps {
 export function SeasonHQ({ customerId }: SeasonHQProps) {
   const { data: driver, isLoading: isLoadingDriver } = useDriverSummary(customerId);
   const { data: activeSeries, isLoading: isLoadingSeries } = useActiveSeries(customerId);
-  const { data: driverData, setCustomerId } = useDriverData();
-  const { races, isLoading: isLoadingRaces } = driverData;
+  const { setCustomerId } = useDriverData();
+  // Same query useActiveSeries uses for "Series This Season" below — sharing
+  // it (React Query dedupes by queryKey) is what keeps this section's stats,
+  // chart and per-series rows in sync with that list, instead of each one
+  // guessing "current season" a different way from the lifetime race cache.
+  const { data: seasonRacesData, isLoading: isLoadingSeasonRaces } = useSeasonRaces(customerId);
   const { data: carAssets } = useCarAssets();
   const [selectedRace, setSelectedRace] = useState<RecentRace | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -885,37 +889,22 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
   // ── All hooks must run unconditionally before any early return ──
 
   const seasonRaces = useMemo(() => {
-    if (!races.length) return [];
+    if (!seasonRacesData || seasonRacesData.length === 0) return [];
 
-    // driverData.races is a lifetime cache that accumulates every race ever
-    // synced to this browser across every past season (see race-cache.ts) —
-    // it does NOT stop at the current season on its own.
-    //
-    // A first attempt scoped this by the season_year/season_quarter each
-    // race gets tagged with at fetch time (see season-races/route.ts), but
-    // that tag is only ever set on the batch a given fetch returned — the
-    // local cache merges new races in without re-tagging what's already
-    // there (see DriverDataContext), so a race synced in an earlier session
-    // stays untagged forever even though it's still part of the current
-    // season. That silently dropped real current-season races.
-    //
-    // seasonId doesn't have that problem: it's been on every race from the
-    // start, and it's what "Series This Season" below already uses (via
-    // useActiveSeries) to decide what counts as current — take each series'
-    // own highest seasonId and keep only races matching it, so this stays
-    // consistent with that list rather than using a second, less reliable
-    // mechanism.
-    const maxSeasonIdBySeries = new Map<number, number>();
-    races.forEach((r) => {
-      const prev = maxSeasonIdBySeries.get(r.seriesId) ?? -Infinity;
-      if (r.seasonId > prev) maxSeasonIdBySeries.set(r.seriesId, r.seasonId);
-    });
-    const current = races.filter((r) => r.seasonId === maxSeasonIdBySeries.get(r.seriesId));
-
-    return [...current].sort(
+    // seasonRacesData already comes straight from /season-races, which
+    // resolves "current season" server-side from each series' actual week
+    // schedule (see season-races/route.ts) — not from the lifetime race
+    // cache, and not from a per-series "highest seasonId seen" guess, which
+    // broke two different ways: it silently missed races a fetch had never
+    // re-tagged, and — for series whose season doesn't reset every quarter —
+    // it kept including months of races that were never dropped just
+    // because no *newer* seasonId had shown up yet. Using the same query
+    // useActiveSeries uses for "Series This Season" means both are always
+    // looking at identical data instead of two guesses that can disagree.
+    return [...seasonRacesData].sort(
       (a, b) => new Date(b.sessionStartTime).getTime() - new Date(a.sessionStartTime).getTime()
     );
-  }, [races]);
+  }, [seasonRacesData]);
 
   const stats = useMemo(() => {
     if (!seasonRaces.length) return null;
@@ -943,11 +932,11 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
   }, [driver]);
 
   const chartDiscs = useMemo(() => {
-    if (!races.length) return [];
+    if (!seasonRaces.length) return [];
     const seen = new Set<string>();
-    races.filter((r) => r.newIRating > 0).forEach((r) => seen.add(getDiscipline(r)));
+    seasonRaces.filter((r) => r.newIRating > 0).forEach((r) => seen.add(getDiscipline(r)));
     return Array.from(seen);
-  }, [races]);
+  }, [seasonRaces]);
 
   const recentFive = useMemo(() => seasonRaces.slice(0, 5), [seasonRaces]);
 
@@ -1039,7 +1028,7 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
         )}
 
         {/* iRating chart */}
-        <IRatingHeroChart races={seasonRaces} isLoading={isLoadingRaces} />
+        <IRatingHeroChart races={seasonRaces} isLoading={isLoadingSeasonRaces} />
 
         {/* Stat chips */}
         <div
@@ -1051,7 +1040,7 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
             paddingBottom: 4,
           }}
         >
-          {isLoadingRaces && !stats ? (
+          {isLoadingSeasonRaces && !stats ? (
             Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
@@ -1130,7 +1119,7 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
                   <SeriesRow
                     key={s.seriesId}
                     series={s}
-                    races={races}
+                    races={seasonRaces}
                     index={i}
                     carImageUrl={carImageUrl}
                     customerId={customerId!}
@@ -1145,7 +1134,7 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
         <section className="v2-fade-in-3">
           <div className="v2-section-label">Recent Races</div>
 
-          {isLoadingRaces && recentFive.length === 0 ? (
+          {isLoadingSeasonRaces && recentFive.length === 0 ? (
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
               {Array.from({ length: 3 }).map((_, i) => (
                 <div

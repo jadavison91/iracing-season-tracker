@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useDriverData, getDiscipline } from '@/contexts/DriverDataContext';
 import { RaceDetailModal } from '@/components/RaceDetailModal';
 import { RecentRace } from '@/lib/iracing/types';
-import { deriveSeasonLabel } from '@/lib/season-utils';
+import { deriveSeasonLabels } from '@/lib/season-utils';
 
 // ── Constants ─────────────────────────────────────────────
 
@@ -453,8 +453,15 @@ export function RaceLog({ customerId }: RaceLogProps) {
     setCustomerId(customerId);
   }, [customerId, setCustomerId]);
 
-  // Season labels
-  const raceLabels = useMemo(() => races.map((r) => deriveSeasonLabel(r)), [races]);
+  // Season labels — derived together (not one race at a time) so an
+  // untagged race can borrow its real season from a tagged sibling that
+  // shares the same series+season instead of falling back to a calendar
+  // guess that can land it in the wrong group (see deriveSeasonLabels).
+  const seasonLabelMap = useMemo(() => deriveSeasonLabels(races), [races]);
+  const raceLabels = useMemo(
+    () => races.map((r) => seasonLabelMap.get(r.subsessionId) ?? 'Unknown'),
+    [races, seasonLabelMap]
+  );
 
   const seasonOptions = useMemo((): { label: string; value: string }[] => {
     const labels = [...new Set(raceLabels)].sort((a, b) => {
