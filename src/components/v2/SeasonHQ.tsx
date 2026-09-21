@@ -889,26 +889,30 @@ export function SeasonHQ({ customerId }: SeasonHQProps) {
 
     // driverData.races is a lifetime cache that accumulates every race ever
     // synced to this browser across every past season (see race-cache.ts) —
-    // it does NOT stop at the current season on its own. Scope it down using
-    // the real season_year/season_quarter the server resolved when each race
-    // was fetched (see season-races/route.ts), taking whichever season is
-    // highest since that's always the most recently started one.
+    // it does NOT stop at the current season on its own.
     //
-    // Races cached before that field existed won't have it. If NONE of the
-    // cached races are tagged yet (the cache hasn't refreshed since this was
-    // added), fall back to the full history rather than showing an empty
-    // chart until the next sync — pull the refresh button to populate tags
-    // immediately.
-    const withSeason = races.filter((r) => r.seasonYear != null && r.seasonQuarter != null);
-    let pool = races;
-    if (withSeason.length > 0) {
-      const currentKey = Math.max(
-        ...withSeason.map((r) => r.seasonYear! * 10 + r.seasonQuarter!)
-      );
-      pool = withSeason.filter((r) => r.seasonYear! * 10 + r.seasonQuarter! === currentKey);
-    }
+    // A first attempt scoped this by the season_year/season_quarter each
+    // race gets tagged with at fetch time (see season-races/route.ts), but
+    // that tag is only ever set on the batch a given fetch returned — the
+    // local cache merges new races in without re-tagging what's already
+    // there (see DriverDataContext), so a race synced in an earlier session
+    // stays untagged forever even though it's still part of the current
+    // season. That silently dropped real current-season races.
+    //
+    // seasonId doesn't have that problem: it's been on every race from the
+    // start, and it's what "Series This Season" below already uses (via
+    // useActiveSeries) to decide what counts as current — take each series'
+    // own highest seasonId and keep only races matching it, so this stays
+    // consistent with that list rather than using a second, less reliable
+    // mechanism.
+    const maxSeasonIdBySeries = new Map<number, number>();
+    races.forEach((r) => {
+      const prev = maxSeasonIdBySeries.get(r.seriesId) ?? -Infinity;
+      if (r.seasonId > prev) maxSeasonIdBySeries.set(r.seriesId, r.seasonId);
+    });
+    const current = races.filter((r) => r.seasonId === maxSeasonIdBySeries.get(r.seriesId));
 
-    return [...pool].sort(
+    return [...current].sort(
       (a, b) => new Date(b.sessionStartTime).getTime() - new Date(a.sessionStartTime).getTime()
     );
   }, [races]);
